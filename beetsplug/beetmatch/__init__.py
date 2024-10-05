@@ -43,8 +43,8 @@ class BeetmatchPlugin(BeetsPlugin):
         ]
 
     def analyze_track(self, _, task: ImportTask):
-        config = BaseConfig(self.config)
-        jukebox = musly.MuslyJukebox(**config.musly_config)
+        config = JukeboxConfig(self.config)
+        jukebox = config.get_musly_jukebox()
 
         for item in task.items:
             self.analyze_cmd.analyze_track(item, jukebox, write=True)
