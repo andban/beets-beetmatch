@@ -1,0 +1,54 @@
+plugins:
+  - beetmatch
+
+directory: /tmp/beets/music
+library: /tmp/beets/library.db
+
+import:
+  copy: no
+  move: no
+  write: no
+
+
+beetmatch:
+  auto: yes
+
+  musly:
+    enabled: yes
+    threads: 2
+    # musly similarity method (timbre|)
+    method: timbre
+    data_dir: beetmatch
+
+  jukeboxes:
+    - name: ambient
+      query: 'style:Ambient'
+    - name: electronic
+      query: 'genre:electronic ^style::Psy-Trance'
+    - name: rock
+      query: 'genre:(Rock|Pop|Country)'
+
+  playlist:
+    # default script to call when generating playlists
+    default_script: '~/.config/beets/scripts/music-create-playlist'
+
+    cooldown:
+      # minimum number of tracks between two tracks from the same artist
+      artist: 5
+      # minimum number of tracks between two tracks from the same album
+      album: 2
+
+    attributes:
+      genre:
+        type: ListDistance
+        weight: 0.3
+      year:
+        type: YearDistance
+        weight: 0.3
+        config:
+          max_diff: 5
+      bpm:
+        type: BpmDistance
+        weight: 0.4
+        config:
+          tolerance: 0.04

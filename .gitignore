@@ -1,0 +1,15 @@
+.devcontainer/
+.direnv/
+.envrc
+.idea/
+.venv/
+.vscode/
+
+__pycache__/
+beets_beetmatch.egg-info/
+
+# tmp
+beetsplug/beetmatch/feature/server/
+server-ui/
+sample-web/
+test-beets/
