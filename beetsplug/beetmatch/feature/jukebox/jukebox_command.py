@@ -178,5 +178,4 @@ def _find_items_to_analyze(
         )
         combined_query = dbcore.AndQuery([combined_query, unprocessed_query])
 
-    print(combined_query)
     return lib.items(combined_query)
