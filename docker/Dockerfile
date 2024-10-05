@@ -50,7 +50,7 @@ COPY --from=build /usr/local/lib/libkeyfinder.so /usr/local/lib/
 COPY --from=build /usr/local/bin/keyfinder-cli /usr/local/bin/
 
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
         libavcodec59 \
         libavformat59 \
         libavutil57 \
@@ -58,16 +58,15 @@ RUN apt-get update \
         libfftw3-single3 \
         libfftw3-double3 \
         libfftw3-long3 \
-        python3 \
-        python3-pip \
     && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir librosa \
     && ldconfig \
     && groupadd -r -g 1001 beets \
     && useradd --no-log-init -rm -d /home/beets -s /bin/sh -u 1001 -g beets beets
 
 COPY . /usr/src/beetmatch
 
-RUN pip install /usr/src/beetmatch
+RUN pip install --no-cache-dir /usr/src/beetmatch
 
 USER beets
 WORKDIR /var/lib/beets
