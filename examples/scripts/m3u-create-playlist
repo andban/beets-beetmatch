@@ -1,0 +1,26 @@
+#!/bin/sh
+
+#
+# This script create a M3U playlist at PLAYLIST_OUTPUT_DIR using the
+# first argument as playlist name and all following arguments as playlist
+# tracks.
+#
+# example:
+#	m3u-create-playlist "playlist_name" "/home/user/Media/track-1.mp3" "/home/user/Media/track-2.m4a"
+#
+# variables:
+# PLAYLIST_OUTPUT_DIR - the location where you want the playlists to be created in
+#
+
+PLAYLIST_OUTPUT_DIR="${HOME}/Music/Playlists"
+mkdir -p "${PLAYLIST_OUTPUT_DIR}"
+
+playlist_name="${1}"
+playlist_file="${PLAYLIST_OUTPUT_DIR}/${playlist_name}.m3u"
+shift
+
+echo "#EXTM3U" > "${playlist_file}"
+for file in "$@"; do
+  echo "${file}" >> "${playlist_file}"
+done
+

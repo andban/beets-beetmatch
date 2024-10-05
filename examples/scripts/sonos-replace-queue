@@ -1,0 +1,46 @@
+#!/bin/sh
+
+#
+# This script will create a new sonos playlist to be played by the speaker withe name found in "SPKR".
+# To match the file paths used by the sonos system, we have to replace the local music directory path with
+# the base path of the SMB file share used by the Sonos music library.
+#
+# example:
+#	sonos-replace-queue "playlist_name" "/home/user/Media/track-1.mp3" "/home/user/Media/track-2.m4a"
+#
+# variables:
+# SPKR - name of your Sonos speaker
+# LOCAL_BASE - local music directory
+# SONOS_BASE - Sonos music library location (usually a SMB network share)
+#
+
+SPKR="name of my sonos speaker"
+LOCAL_BASE="/Users/example/Music/Media"
+SONOS_BASE="x-file-cifs://nasserver/music"
+
+urlencode() {
+  python -c 'import  sys; from urllib.parse import quote;  print(quote(sys.argv[1]))' \
+    "$1"
+}
+
+sonos "$SPKR" shuffle off
+sonos "$SPKR" cross_fade on
+sonos "$SPKR" clear_queue
+
+playlist="$1"
+sonos "$SPKR" delete_playlist "$playlist"
+
+first=0
+shift
+for file in "$@"
+do
+  file=$(urlencode "${file//$LOCAL_BASE/}")
+  sonos "$SPKR" add_uri_to_queue "${SONOS_BASE}${file}"
+  if [ "$first" -eq 0 ]; then
+    sonos "$SPKR" play_from_queue
+    first=1
+  fi
+done
+
+
+

@@ -1,0 +1,27 @@
+#!/usr/bin/osascript
+
+(*
+This script replaces the tracks of the given playlist with tracks
+found at the given filesystem paths.
+The playlist has te be created first in Swinsian before it can be used by this script.
+
+example:
+	swinsian-replace-playlist "playlist name" "/home/user/Media/track-1.mp3" "/home/user/Media/track-2.m4a"
+*)
+
+on run argv
+	if length of argv > 1 then
+		tell application "Swinsian"
+			set playlistName to item 1 of argv
+			set selectedPlaylist to playlist playlistName
+			delete tracks of selectedPlaylist
+			
+			repeat with i from 2 to length of argv
+				set playlistTrack to find track (item i of argv)
+				add tracks (playlistTrack as list) to selectedPlaylist
+			end repeat
+			
+		end tell
+	end if
+end run
+
