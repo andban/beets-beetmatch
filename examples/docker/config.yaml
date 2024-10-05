@@ -1,0 +1,80 @@
+plugins:
+  #- autobpm
+  - keyfinder
+  - beetmatch
+
+directory: /var/lib/music
+library: /var/lib/beets/library.db
+
+import:
+  copy: no
+  move: no
+  write: no
+  autotag: no
+
+musicbrainz:
+  enabled: no
+
+autobpm:
+  auto: yes
+  overwrite: no
+
+keyfinder:
+  auto: yes
+  overwrite: no
+  bin: keyfinder-cli
+
+beetmatch:
+  auto: yes
+
+  musly:
+    enabled: yes
+    method: timbre
+    threads: 4
+
+  jukeboxes:
+    - name: ambient
+      query:
+        - "style::Ambient"
+        - "length:..30:00"
+    - name: electronic
+      query:
+        - "genre::Electronic"
+        - "length:..30:00"
+    - name: rock
+      query:
+        - "genre::(Rock|Pop|Country|Funk)"
+        - "length:..30:00"
+    - name: all
+      query:
+        - "length:..30:00"
+
+  playlist:
+    default_script: /var/lib/beets/m3u-create-playlist
+
+    cooldown:
+      artist: 5
+      album: 1
+
+    attributes:
+      musly_track:
+        type: MuslyDistance
+        weight: 0.30
+      initial_key:
+        type: TonalDistance
+        weight: 0.30
+        config:
+          notation: standard
+      bpm:
+        type: BpmDistance
+        weight: 0.20
+        config:
+          tolerance: 0.04
+      genre:
+        type: ListDistance
+        weight: 0.10
+      year:
+        type: YearDistance
+        weight: 0.10
+        config:
+          max_diff: 5

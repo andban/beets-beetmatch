@@ -1,0 +1,18 @@
+#!/bin/bash
+
+MUSIC_DIR_LOCAL="/var/lib/music"
+MUSIC_DIR_HOST="/Users/andreas/Music/Media"
+
+PLAYLIST_OUTPUT_DIR="$BEETSDIR/playlists"
+
+mkdir -p "${PLAYLIST_OUTPUT_DIR}"
+
+playlist_name="${1}"
+playlist_file="${PLAYLIST_OUTPUT_DIR}/${playlist_name}.m3u"
+shift
+
+echo "#EXTM3U" > "${playlist_file}"
+for file in "$@"; do
+  echo $(echo "${file}" | sed -e "s#$MUSIC_DIR_LOCAL#$MUSIC_DIR_HOST#g") >> "${playlist_file}"
+done
+

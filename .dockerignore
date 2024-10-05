@@ -1,0 +1,13 @@
+.vscode/
+.devcontainer/
+
+.envrc
+.gitignore
+
+.dockerignore
+docker/
+!docker/bootstrap.sh
+
+.direnv/
+**/__pycache__/
+beets_beetmatch.egg-info
