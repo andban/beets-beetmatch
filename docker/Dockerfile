@@ -33,10 +33,10 @@ RUN curl -SL https://github.com/mixxxdj/libkeyfinder/archive/refs/tags/2.2.8.tar
     && cmake --install build \
     && ls -l /usr/local/lib
 
-RUN curl -SL https://github.com/andban/keyfinder-cli/archive/heads/bugfix/endless-loop-on-linux-aarch64.tar.gz \
+RUN curl -SL https://github.com/evanpurkhiser/keyfinder-cli/archive/refs/heads/main.tar.gz \
                | tar -xzC /usr/src \
     && ls -l /usr/src \
-    && cd /usr/src/keyfinder-cli-heads-bugfix-endless-loop-on-linux-aarch64 \
+    && cd /usr/src/keyfinder-cli-main \
     && make && make install
 
 #

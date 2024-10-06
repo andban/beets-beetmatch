@@ -186,16 +186,17 @@ attributes:
 ## Docker Image
 
 ```bash
+$ docker build -f docker/Dockerfile -t beetmatch .
 $ docker run -it \
      -v "${PWD}/examples/docker:/var/lib/beets" \
      -v "<your music folder>:/var/lib/music:ro" \
      -e "BEETSDIR=/var/lib/beets" \
      -e "MUSIC_FOLDER_HOST=<your music folder>" \
-     docker.home.borntohula.de/andreas/beetmatch:latest
+     beetmatch:latest
 
 beets@docker:/var/lib/beets$ beet import /var/lib/music
 # this should take quite a while
-beets@docker:/var/lib/beets$ beet bmu -w
+beets@docker:/var/lib/beets$ beet bmj -u -w
 beets@docker:/var/lib/beets$ beet bmg -j rock -t 10
 ```
 
