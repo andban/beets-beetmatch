@@ -3,7 +3,7 @@ import ctypes.util
 import struct
 import sys
 from io import BytesIO, BufferedIOBase
-from typing import BinaryIO
+from typing import BinaryIO, List
 
 from .utility import MuslyError, check_return_value, read_c_str, read_int
 
@@ -266,7 +266,7 @@ def jukebox_get_track_ids(jukebox: JukeboxStruct):
     return list(id_array)
 
 
-def jukebox_add_tracks(jukebox: JukeboxStruct, tracks: list[TrackStruct], track_ids=None):
+def jukebox_add_tracks(jukebox: JukeboxStruct, tracks: List[TrackStruct], track_ids=None):
     track_array = (ctypes.c_void_p * len(tracks))(*tracks)
     track_array_ptr = ctypes.cast(track_array, ctypes.POINTER(ctypes.c_void_p))
 
@@ -285,7 +285,7 @@ def jukebox_add_tracks(jukebox: JukeboxStruct, tracks: list[TrackStruct], track_
     return list(id_array) if track_ids is None else track_ids
 
 
-def jukebox_remove_tracks(jukebox: JukeboxStruct, track_ids: list[int]):
+def jukebox_remove_tracks(jukebox: JukeboxStruct, track_ids: List[int]):
     id_array = (ctypes.c_int * len(track_ids))(*track_ids)
     check_return_value(_libmusly.musly_jukebox_removetracks(
         jukebox, id_array, len(track_ids)
@@ -332,7 +332,7 @@ def jukebox_track_from_audio_file(jukebox: JukeboxStruct, filename: str, start, 
     return track_ptr
 
 
-def jukebox_set_style(jukebox: JukeboxStruct, tracks: list[TrackStruct]):
+def jukebox_set_style(jukebox: JukeboxStruct, tracks: List[TrackStruct]):
     track_array = (ctypes.c_void_p * len(tracks))(*tracks)
     track_array_ptr = ctypes.cast(track_array, ctypes.POINTER(ctypes.c_void_p))
 
@@ -343,8 +343,8 @@ def jukebox_set_style(jukebox: JukeboxStruct, tracks: list[TrackStruct]):
 
 def jukebox_compute_similarities(jukebox: JukeboxStruct,
                                  track: TrackStruct, track_id: int,
-                                 other_tracks: list[TrackStruct],
-                                 other_ids: list[int]) -> list[float]:
+                                 other_tracks: List[TrackStruct],
+                                 other_ids: List[int]) -> List[float]:
     if len(other_tracks) != len(other_ids):
         raise MuslyError("cannot compute similarities because mismatching lengths of tracks and ids")
 

@@ -1,8 +1,8 @@
 import weakref
 from io import BytesIO
-from typing import BinaryIO
+from typing import BinaryIO, List
 
-import beetsplug.beetmatch.musly.libmusly as libmusly
+from . import libmusly
 from .track import MuslyTrack
 
 
@@ -67,7 +67,7 @@ class MuslyJukebox(object):
         musly_jukebox = libmusly.jukebox_deserialize(src, ignore_decoder)
         return MuslyJukebox(ctx=musly_jukebox)
 
-    def add_tracks(self, tracks: list[MuslyTrack], track_ids=None):
+    def add_tracks(self, tracks: List[MuslyTrack], track_ids=None):
         """Add all items of the `tracks` list to the jukebox.
         When `track_ids` is a list, each entry of `tracks` is assigned the id found at the same index in `track_ids`.
         When `track_ids` is `None`, track ids are automatically generated.

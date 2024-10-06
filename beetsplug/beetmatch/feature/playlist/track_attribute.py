@@ -1,4 +1,4 @@
-import beetsplug.beetmatch.feature.playlist.distances as distances
+from . import distances
 
 
 class TrackAttribute:

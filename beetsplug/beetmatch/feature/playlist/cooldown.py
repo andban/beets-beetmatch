@@ -1,12 +1,14 @@
+from typing import List, Dict
+
 from beets.library import Item
 
 
 class Cooldown(object):
-    last_seen: list[dict[str, any]] = []
-    attr_cooldowns: dict[str, int]
+    last_seen: List[Dict[str, any]] = []
+    attr_cooldowns: Dict[str, int]
     max_cooldown: int
 
-    def __init__(self, attr_cooldowns: dict[str, int]):
+    def __init__(self, attr_cooldowns: Dict[str, int]):
         self.max_cooldown = max(attr_cooldowns.values())
         self.attr_cooldowns = dict(attr_cooldowns)
 

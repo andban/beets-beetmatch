@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from beets.library import Item
 
@@ -21,14 +22,14 @@ class MatchItem:
 class PlaylistGenerator(object):
     log: logging.Logger
     jukebox: MuslyJukebox
-    items: list[Item]
+    items: List[Item]
     seed_item: Item
     cooldown: Cooldown
 
     def __init__(self,
                  jukebox: Jukebox,
                  config: PlaylistConfig,
-                 items: list[Item],
+                 items: List[Item],
                  seed_item: Item,
                  log: logging.Logger = logging.getLogger("beetmatch:generator")):
         self.log = log

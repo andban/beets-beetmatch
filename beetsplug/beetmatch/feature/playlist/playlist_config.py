@@ -1,6 +1,6 @@
 import confuse
 
-import beetsplug.beetmatch.feature.playlist.distances as distances
+from . import distances
 from .cooldown import Cooldown
 from .track_attribute import TrackAttribute
 

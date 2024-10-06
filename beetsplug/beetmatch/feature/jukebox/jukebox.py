@@ -1,5 +1,6 @@
 import pathlib
 from base64 import b64decode
+from typing import Union, List
 
 from beets import dbcore
 from beets.dbcore import Query
@@ -39,7 +40,7 @@ class Jukebox:
     def musly_jukebox(self):
         return self._musly_jukebox
 
-    def get_query(self, additional_query: str | dbcore.Query = "") -> Query:
+    def get_query(self, additional_query: Union[str, dbcore.Query] = "") -> Query:
         if not additional_query:
             return self._query
 
@@ -57,7 +58,7 @@ class Jukebox:
             print(f"filename {self._filename}")
             self._musly_jukebox.write_to(fh)
 
-    def init_musly_jukebox(self, items: list[Item]):
+    def init_musly_jukebox(self, items: List[Item]):
         if not self.musly_jukebox:
             return
 
