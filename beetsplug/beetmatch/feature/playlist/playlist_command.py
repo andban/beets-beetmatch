@@ -183,7 +183,8 @@ class PartialFormatter(string.Formatter):
 
     def format_field(self, value, spec):
         # handle an invalid format
-        if value is None: return self.missing
+        if value is None:
+            return self.missing
         try:
             return super(PartialFormatter, self).format_field(value, spec)
         except ValueError:

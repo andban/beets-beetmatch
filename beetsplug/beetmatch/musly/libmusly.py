@@ -27,7 +27,7 @@ def _guess_lib_name():
         )
     else:
         # todo: check package managers
-        return ("libmusly.so",)
+        return ("libmusly.so", "libmusly.dylib")
 
 
 def _load_lib(name):
@@ -103,7 +103,7 @@ def list_methods():
 def list_decoders():
     decoders = _libmusly.musly_jukebox_listdecoders().decode("utf-8")
 
-    if decoders == None:
+    if decoders is None:
         return []
 
     return decoders.split(",")

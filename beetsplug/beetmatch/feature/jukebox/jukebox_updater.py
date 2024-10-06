@@ -59,7 +59,7 @@ def _stratified_sample(items, k: int, categorizer: Callable[[dict], list]):
             continue
 
         item_category = choice(item_categories)
-        if not item_category in all_categories:
+        if item_category not in all_categories:
             all_categories[item_category] = {item}
         else:
             all_categories[item_category].add(item)

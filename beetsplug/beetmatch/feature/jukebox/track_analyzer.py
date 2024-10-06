@@ -4,8 +4,8 @@ from os.path import isfile
 
 from beets.library import Item
 
-from beetsplug.beetmatch.common import default_logger
-from beetsplug.beetmatch.musly import MuslyJukebox, MuslyError
+from ...common import default_logger
+from ...musly import MuslyJukebox, MuslyError
 
 
 def _check_path(path: str):

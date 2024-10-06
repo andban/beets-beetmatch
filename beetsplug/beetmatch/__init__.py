@@ -9,12 +9,9 @@ Module for algorithmic playlist generation
 """
 from beets.importer import ImportTask
 from beets.plugins import BeetsPlugin
-from confuse import templates
 
-from . import musly
 from .common import BaseConfig
 from .feature.jukebox import JukeboxCommand, JukeboxConfig
-from .feature.jukebox.track_analyzer import analyze_track
 from .feature.playlist import PlaylistCommand
 
 
@@ -29,10 +26,12 @@ class BeetmatchPlugin(BeetsPlugin):
     def __init__(self):
         super(BeetmatchPlugin, self).__init__()
 
+        config = BaseConfig(self.config)
+
         self.analyze_cmd = JukeboxCommand(self.config)
         self.playlist_cmd = PlaylistCommand(self.config)
 
-        if self.config["auto"].get(templates.Optional(bool)):
+        if config.auto_import:
             self.import_stages = [self.analyze_track]
 
     def commands(self):

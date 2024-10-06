@@ -1,6 +1,5 @@
 from .bpm import BpmDistance
 from .distance import Distance
-from .distance import Distance
 from .euclidean import EuclideanDistance
 from .musly import MuslyDistance
 from .set import SetDistance, ListDistance
