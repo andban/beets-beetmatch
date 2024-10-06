@@ -1,7 +1,7 @@
 import unittest
 
 import beetsplug.beetmatch.musly as musly
-from test.helper import MUSLY_AVAILABLE
+from tests.helper import MUSLY_AVAILABLE
 
 
 @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")

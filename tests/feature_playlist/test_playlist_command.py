@@ -1,4 +1,4 @@
-from test.helper import PluginTest
+from tests.helper import PluginTest
 
 
 class TestJukeboxCommand(PluginTest):

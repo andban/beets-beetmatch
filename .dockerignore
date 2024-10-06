@@ -1,6 +1,7 @@
 .vscode/
 .devcontainer/
-
+.idea/
+.direnv/
 .envrc
 .gitignore
 
@@ -8,6 +9,12 @@
 docker/
 !docker/bootstrap.sh
 
-.direnv/
 **/__pycache__/
-beets_beetmatch.egg-info
+beetmatch.egg-info
+dist/
+htmlcov/
+
+tests/
+.coverage
+.coveragerc
+

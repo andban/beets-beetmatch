@@ -3,7 +3,7 @@ import unittest
 
 from beets import util
 
-from test.helper import MUSLY_AVAILABLE, PluginTest
+from tests.helper import MUSLY_AVAILABLE, PluginTest
 
 
 class TestJukeboxCommand(PluginTest):
@@ -46,7 +46,7 @@ class TestJukeboxCommand(PluginTest):
             }
         })
 
-        item = self.add_item_fixture()
+        self.add_item_fixture()
 
         self.run_command("beetmatch-jukebox", "-w", "-u")
 
