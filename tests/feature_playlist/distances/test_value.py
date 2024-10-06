@@ -1,11 +1,11 @@
 import unittest
 
-from beetsplug.beetmatch.feature.playlist.distances import DanceabilityDistance
+from beetsplug.beetmatch.feature.playlist.distances import NumberDistance
 
 
-class DanceablilityDistanceTest(unittest.TestCase):
+class NumberDistanceTest(unittest.TestCase):
     def test_danceability_within_range(self):
-        dance = DanceabilityDistance()
+        dance = NumberDistance("danceability")
         a = {"danceability": 0.5}
         b = {"danceability": 0.3}
 
@@ -13,7 +13,7 @@ class DanceablilityDistanceTest(unittest.TestCase):
         self.assertAlmostEqual(dance.similarity(a, b), 0.8)
 
     def test_danceability_out_of_range(self):
-        dance = DanceabilityDistance()
+        dance = NumberDistance("danceability")
         a = {"danceability": -1.0}
         b = {"danceability": 12.0}
 

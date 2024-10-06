@@ -35,8 +35,3 @@ class NumberDistance(Distance):
             return 0.0
 
         return abs(a_value - b_value) / (self.max_value - self.min_value)
-
-
-class DanceabilityDistance(NumberDistance):
-    def __init__(self):
-        super().__init__("danceability")
