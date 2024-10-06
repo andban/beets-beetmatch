@@ -7,6 +7,12 @@
 
 __pycache__/
 beets_beetmatch.egg-info/
+build/
+dist/
+
+examples/docker/
+!examples/docker/config.yaml
+!examples/docker/m3u-create-playlist
 
 # tmp
 beetsplug/beetmatch/feature/server/
