@@ -1,35 +1,42 @@
-import unittest
+import pytest
 
 from beetsplug.beetmatch.feature.playlist.distances import ListDistance
+from tests.assert_helper import assert_almost_equal
 
 
-class ListDistanceTest(unittest.TestCase):
-    set_measure: ListDistance
+class TestListDistance:
+    @pytest.fixture(autouse=True)
+    def measure(self):
+        return ListDistance(key="style")
 
-    def setUp(self):
-        self.set_measure = ListDistance(key="style")
-
-    def test_style_full_match(self):
+    def test_list_full_match(self, measure):
         a = {"style": "trance, acid"}
         b = {"style": "trance, acid"}
 
-        self.assertAlmostEqual(self.set_measure.distance(a, b), 0.0)
-        self.assertAlmostEqual(self.set_measure.similarity(a, b), 1.0)
+        assert_almost_equal(measure.distance(a, b), 0.0)
+        assert_almost_equal(measure.similarity(a, b), 1.0)
 
-    def test_style_partial_match(self):
+    def test_list_partial_match(self, measure):
         a = {"style": "trance, ambient"}
         b = {"style": "trance, acid"}
 
-        self.assertAlmostEqual(self.set_measure.distance(a, b), 0.666, 2)
-        self.assertAlmostEqual(self.set_measure.similarity(a, b), 0.333, 2)
+        assert_almost_equal(measure.distance(a, b), 0.667, 3)
+        assert_almost_equal(measure.similarity(a, b), 0.333, 3)
 
-    def test_style_no_match(self):
+    def test_list_no_match(self, measure):
         a = {"style": "trance, ambient"}
         b = {"style": "techno, ebm"}
 
-        self.assertAlmostEqual(self.set_measure.distance(a, b), 1.0)
-        self.assertAlmostEqual(self.set_measure.similarity(a, b), 0.0)
+        assert_almost_equal(measure.distance(a, b), 1.0)
+        assert_almost_equal(measure.similarity(a, b), 0.0)
 
+    @pytest.mark.parametrize(
+        "style_a,style_b",
+        [("Vegetarian Progressive Grindcore", None), (None, "Lounge"), (None, None)],
+    )
+    def test_list_not_present(self, measure, style_a, style_b):
+        a = {"style": style_a}
+        b = {"style": style_b}
 
-if __name__ == "__main__":
-    unittest.main()
+        assert_almost_equal(measure.distance(a, b), 1.0)
+        assert_almost_equal(measure.similarity(a, b), 0.0)

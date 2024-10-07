@@ -15,5 +15,5 @@ __all__ = [
     "ListDistance",
     "TonalDistance",
     "NumberDistance",
-    "YearDistance"
+    "YearDistance",
 ]

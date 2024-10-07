@@ -17,14 +17,7 @@ from beetsplug.beetmatch.musly import libmusly
 MUSLY_AVAILABLE = libmusly.library_present()
 
 _test_dir = bytestring_path(os.path.dirname(__file__))
-_fixture_dir = bytestring_path(
-    os.path.abspath(
-        os.path.join(
-            _test_dir,
-            b"fixtures"
-        )
-    )
-)
+FIXTURE_DIR = bytestring_path(os.path.abspath(os.path.join(_test_dir, b"fixtures")))
 
 
 class Assertions:
@@ -56,7 +49,7 @@ class PluginTest(unittest.TestCase, Assertions):
             "os.environ",
             {
                 "BEETSDIR": os.fsdecode(self.beets_dir),
-                "HOME": os.fsdecode(self.beets_dir)
+                "HOME": os.fsdecode(self.beets_dir),
             },
         )
         self._env_patcher.start()
@@ -125,7 +118,7 @@ class PluginTest(unittest.TestCase, Assertions):
             "album": "An Album of Songs",
             "track": item_count,
             "format": "MP3",
-            "length": 123
+            "length": 123,
         }
         values.update(attributes)
         values["title"] = values["title"].format(item_count)
@@ -133,7 +126,7 @@ class PluginTest(unittest.TestCase, Assertions):
         item = Item(**values)
         if "path" not in values:
             item["path"] = os.path.join(
-                _fixture_dir, bytestring_path("dummy-audio." + item["format"].lower())
+                FIXTURE_DIR, bytestring_path("dummy-audio." + item["format"].lower())
             )
         item.mtime = 123456
         return item
@@ -154,9 +147,7 @@ class PluginTest(unittest.TestCase, Assertions):
     def add_item_fixture(self, **attributes):
         item = self.create_item(**attributes)
         extension = item["format"].lower()
-        item["path"] = os.path.join(
-            _fixture_dir, bytestring_path("audio." + extension)
-        )
+        item["path"] = os.path.join(FIXTURE_DIR, bytestring_path("audio." + extension))
         item.add(self.lib)
         item.move(operation=MoveOperation.COPY)
         item.store()

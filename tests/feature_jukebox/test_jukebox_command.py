@@ -15,15 +15,9 @@ class TestJukeboxCommand(PluginTest):
 
     @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")
     def test_analyze(self):
-        self.config.set({
-            "beetmatch": {
-                "auto": True,
-                "jukeboxes": [{
-                    "name": "test",
-                    "query": ""
-                }]
-            }
-        })
+        self.config.set(
+            {"beetmatch": {"auto": True, "jukeboxes": [{"name": "test", "query": ""}]}}
+        )
 
         item = self.add_item_fixture()
         self.run_command("beetmatch-jukebox", "-w")
@@ -34,17 +28,14 @@ class TestJukeboxCommand(PluginTest):
 
     @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")
     def test_update(self):
-        self.config.set({
-            "beetmatch": {
-                "musly": {
-                    "data_dir": "musly_data"
-                },
-                "jukeboxes": [{
-                    "name": "test",
-                    "query": ""
-                }]
+        self.config.set(
+            {
+                "beetmatch": {
+                    "musly": {"data_dir": "musly_data"},
+                    "jukeboxes": [{"name": "test", "query": ""}],
+                }
             }
-        })
+        )
 
         self.add_item_fixture()
 
@@ -53,7 +44,7 @@ class TestJukeboxCommand(PluginTest):
         jukebox_file = os.path.join(
             self.beets_dir,
             util.bytestring_path("musly_data"),
-            util.bytestring_path("test.jukebox")
+            util.bytestring_path("test.jukebox"),
         )
 
         self.assertTrue(os.path.exists(jukebox_file))
@@ -91,5 +82,5 @@ class TestJukeboxCommand(PluginTest):
 #             self.assertIsNotNone(item.musly_method)
 #
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,10 +9,9 @@ class EuclideanDistance:
     def __init__(self, dimensions=None, **kwargs):
         if dimensions is None:
             dimensions = []
-            
+
         self.dimensions = list(dimensions)
-        self.sum_weight = reduce(
-            lambda sum, d: sum + d[1], self.dimensions, 0.0)
+        self.sum_weight = reduce(lambda sum, d: sum + d[1], self.dimensions, 0.0)
 
     def add(self, dimension, weight=1.0):
         if weight < 0.0:
@@ -31,11 +30,14 @@ class EuclideanDistance:
             dist_fn, weight = dimension
             return sum + pow(dist_fn.distance(a, b), 2) * weight
 
-        sum = reduce(
-            reducer,
-            self.dimensions,
-            0.0,
-        ) / self.sum_weight
+        sum = (
+            reduce(
+                reducer,
+                self.dimensions,
+                0.0,
+            )
+            / self.sum_weight
+        )
 
         return sqrt(sum)
 

@@ -13,9 +13,9 @@ class BpmDistance(Distance):
         b_bpm = b.get(self.key, None)
 
         if a_bpm is None or b_bpm is None:
-            return 1.0 if a_bpm == b_bpm else 0.0
+            return 0.0
 
-        threshold = min(a_bpm, b_bpm) * self.tolerance
+        threshold = a_bpm * self.tolerance
         return 1.0 if abs(int(a_bpm) - int(b_bpm)) <= threshold else 0.0
 
     def distance(self, a, b):

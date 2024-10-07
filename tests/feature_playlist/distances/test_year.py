@@ -1,25 +1,34 @@
-import unittest
+import pytest
 
 from beetsplug.beetmatch.feature.playlist.distances import YearDistance
+from tests.assert_helper import assert_almost_equal
 
 
-class YearDistanceTest(unittest.TestCase):
-    def test_year_within_range(self):
-        year = YearDistance(key="year", max_diff=5)
+class TestYearDistance:
+    @pytest.fixture
+    def measure(self):
+        return YearDistance(key="year", max_diff=5)
+
+    def test_year_within_range(self, measure):
         a = {"year": "1990"}
         b = {"year": "1995"}
 
-        self.assertAlmostEqual(year.distance(a, b), 0.0)
-        self.assertAlmostEqual(year.similarity(a, b), 1.0)
+        assert_almost_equal(measure.distance(a, b), 0.0)
+        assert_almost_equal(measure.similarity(a, b), 1.0)
 
-    def test_year_out_of_range(self):
-        year = YearDistance(key="year", max_diff=3)
-        a = {"year": "2000"}
-        b = {"year": "2004"}
+    def test_year_out_of_range(self, measure):
+        a = {"year": "2006"}
+        b = {"year": "2000"}
 
-        self.assertAlmostEqual(year.distance(a, b), 1.0)
-        self.assertAlmostEqual(year.similarity(a, b), 0.0)
+        assert_almost_equal(measure.distance(a, b), 1.0)
+        assert_almost_equal(measure.similarity(a, b), 0.0)
 
+    @pytest.mark.parametrize(
+        "value_a,value_b", [(None, 2000), (2024, None), (None, None)]
+    )
+    def test_year_out_of_range(self, measure, value_a, value_b):
+        a = {"year": value_a}
+        b = {"year": value_b}
 
-if __name__ == "__main__":
-    unittest.main()
+        assert_almost_equal(measure.distance(a, b), 1.0)
+        assert_almost_equal(measure.similarity(a, b), 0.0)

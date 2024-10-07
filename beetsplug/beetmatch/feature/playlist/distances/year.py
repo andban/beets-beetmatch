@@ -13,7 +13,7 @@ class YearDistance(Distance):
         b_year = b.get(self.key, None)
 
         if a_year is None or b_year is None:
-            return 1.0 if a_year == b_year else 0.0
+            return 0.0
 
         return 1.0 if abs(int(a_year) - int(b_year)) <= self.max_diff else 0.0
 
