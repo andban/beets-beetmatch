@@ -48,10 +48,11 @@ platforms = ["ALL"]
 include = ["beetsplug*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 70"
-
-[tool.coverage.run]
-source = ["beetsplug"]
+minversion = 8.3
+addopts = "-ra -q --cov=beetsplug --cov-report html --cov-report term-missing --cov-fail-under 70"
+testpaths = [
+    "tests"
+]
 
 [tool.ruff.lint]
 ignore = [

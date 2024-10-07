@@ -1,4 +1,5 @@
 import warnings
+from typing import Union
 
 import confuse
 
@@ -33,7 +34,7 @@ class JukeboxConfig(BaseConfig):
     def jukebox_names(self):
         return [jukebox["name"] for jukebox in self.jukeboxes]
 
-    def get_jukebox(self, name: str):
+    def get_jukebox(self, name: Union[str, None] = None):
         jukebox_config = next((jc for jc in self.jukeboxes if jc["name"] == name), None)
 
         if jukebox_config is None:

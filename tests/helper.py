@@ -1,16 +1,20 @@
 import os
 import shutil
 import sys
-import unittest
+from functools import cached_property
+from pathlib import Path
 from tempfile import mkdtemp
+from typing import Union
 from unittest.mock import patch
 
 import beets
 import beets.plugins
 import beets.ui
+from beets.importer import ImportSession
 from beets.library import Library, Item, Album
 from beets.util import bytestring_path, syspath, arg_encoding, MoveOperation, normpath
 from confuse import LazyConfig
+from mediafile import MediaFile
 
 from beetsplug.beetmatch.musly import libmusly
 
@@ -20,11 +24,7 @@ _test_dir = bytestring_path(os.path.dirname(__file__))
 FIXTURE_DIR = bytestring_path(os.path.abspath(os.path.join(_test_dir, b"fixtures")))
 
 
-class Assertions:
-    pass
-
-
-class PluginTest(unittest.TestCase, Assertions):
+class PluginTest:
     beets_dir: bytes
     media_dir: bytes
 
@@ -38,7 +38,7 @@ class PluginTest(unittest.TestCase, Assertions):
         self._item_count += 1
         return count
 
-    def setup_beets(self):
+    def setup_beets(self, load_plugin=True):
         # create temporary BEETSDIR
         self.beets_dir = bytestring_path(mkdtemp())
 
@@ -59,7 +59,7 @@ class PluginTest(unittest.TestCase, Assertions):
         self.config.sources = []
         self.config.read(user=False, defaults=True)
 
-        self.config["plugins"] = ["beetmatch"]
+        self.config["plugins"] = []
         self.config["verbose"] = 1
         self.config["ui"]["color"] = False
         self.config["threaded"] = False
@@ -69,8 +69,8 @@ class PluginTest(unittest.TestCase, Assertions):
         dbpath = bytestring_path(self.config["library"].as_filename())
         self.lib = Library(dbpath, self.media_dir)
 
-        beets.plugins.load_plugins(self.config["plugins"].get(list))
-        beets.plugins.find_plugins()
+        if load_plugin:
+            self.load_plugins()
 
         # Take a backup of the original _types and _queries to restore
         # when unloading.
@@ -101,6 +101,12 @@ class PluginTest(unittest.TestCase, Assertions):
         Album._types = getattr(Album, "_original_types", {})
         Item._queries = getattr(Item, "_original_queries", {})
         Album._queries = getattr(Album, "_original_queries", {})
+
+    def load_plugins(self):
+        self.config["plugins"] = ["beetmatch"]
+
+        beets.plugins.load_plugins(self.config["plugins"].get(list))
+        beets.plugins.find_plugins()
 
     def run_command(self, *args, **kwargs):
         sys.argv = ["beet"]
@@ -160,3 +166,72 @@ def _convert_args(args):
             args[i] = arg.decode(arg_encoding())
 
     return args
+
+
+class ImportTest(PluginTest):
+    _default_import_config = {
+        "autotag": False,
+        "copy": True,
+        "hardlink": False,
+        "link": False,
+        "move": False,
+        "resume": False,
+        "singletons": False,
+        "timid": True
+    }
+    _resource_path = syspath(os.path.join(FIXTURE_DIR, b"sample-12s.mp3"))
+
+    importer: ImportSession
+
+    @cached_property
+    def import_path(self) -> Path:
+        import_path = Path(os.fsdecode(os.path.join(self.beets_dir, b"import")))
+        import_path.mkdir(exist_ok=True)
+        return import_path
+
+    @cached_property
+    def import_dir(self) -> bytes:
+        return bytestring_path(str(self.import_path))
+
+    def setup_import(self):
+        self.import_media = []
+        self.lib.path_formats = [
+            ("default", os.path.join("$artist", "$album", "$title")),
+        ]
+
+    def prepare_track_for_import(self,
+                                 track_id: int,
+                                 album_path: Union[Path, None] = None,
+                                 album_id: Union[int, None] = None) -> Path:
+        if not album_path:
+            album_dir = f"album_{album_id}" if album_id else "album"
+            album_path = self.import_path / album_dir
+
+        album_path.mkdir(exist_ok=True)
+
+        track_path = album_path / f"track_{track_id}.mp3"
+        shutil.copy(self._resource_path, track_path)
+
+        medium = MediaFile(track_path)
+        medium.update({
+            "album": "The Album" + (f" {album_id}" if album_id else ""),
+            "albumartist": None,
+            "mb_albumid": None,
+            "comp": None,
+            "artist": "The Artist",
+            "title": f"Song #{track_id}",
+            "track": track_id,
+            "mb_trackid": None,
+        })
+        medium.save()
+        self.import_media.append(medium)
+
+        return track_path
+
+    def prepare_importer(self, import_dir: Union[bytes, None] = None, **kwargs) -> ImportSession:
+        self.config["import"].set_args({**self._default_import_config, **kwargs})
+        self.importer = self._get_import_session(import_dir or self.import_dir)
+        return self.importer
+
+    def _get_import_session(self, import_dir: bytes) -> ImportSession:
+        return ImportSession(self.lib, loghandler=None, query=None, paths=[import_dir])

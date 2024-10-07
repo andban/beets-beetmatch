@@ -1,19 +1,20 @@
 import os
-import unittest
 
+import pytest
 from beets import util
 
 from tests.helper import MUSLY_AVAILABLE, PluginTest
 
 
 class TestJukeboxCommand(PluginTest):
-    def setUp(self):
-        self.setup_beets()
 
-    def tearDown(self):
+    @pytest.fixture(autouse=True, name="lib")
+    def fixture_lib(self):
+        self.setup_beets()
+        yield self.lib
         self.teardown_beets()
 
-    @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")
+    @pytest.mark.skipif(not MUSLY_AVAILABLE, reason="libmusly not available")
     def test_analyze(self):
         self.config.set(
             {"beetmatch": {"auto": True, "jukeboxes": [{"name": "test", "query": ""}]}}
@@ -23,10 +24,10 @@ class TestJukeboxCommand(PluginTest):
         self.run_command("beetmatch-jukebox", "-w")
 
         item.load()
-        self.assertIsNotNone(item["musly_track"])
-        self.assertEqual(item["musly_method"], "timbre")
+        assert item["musly_track"] is not None
+        assert item["musly_method"] == "timbre"
 
-    @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")
+    @pytest.mark.skipif(not MUSLY_AVAILABLE, reason="libmusly not available")
     def test_update(self):
         self.config.set(
             {
@@ -47,40 +48,4 @@ class TestJukeboxCommand(PluginTest):
             util.bytestring_path("test.jukebox"),
         )
 
-        self.assertTrue(os.path.exists(jukebox_file))
-
-
-# class AutoImportTest(unittest.TestCase, TestHelper):
-#     def setUp(self):
-#         self.setup_beets(disk=True)
-#         self.config.set({
-#             "beetmatch": {
-#                 "auto": True,
-#
-#                 "musly": {
-#                     "enabled": True
-#                 }
-#             },
-#         })
-#
-#         try:
-#             self.load_plugins("beetmatch")
-#         except:
-#             self.tearDown()
-#
-#         self.importer = self.create_importer()
-#
-#     def tearDown(self):
-#         self.unload_plugins()
-#         self.teardown_beets()
-#
-#     @unittest.skipIf(not MUSLY_AVAILABLE, "libmusly not available")
-#     def test_import_analyzed(self):
-#         self.importer.run()
-#         for item in self.lib.items():
-#             self.assertIsNotNone(item.musly_track)
-#             self.assertIsNotNone(item.musly_method)
-#
-
-if __name__ == "__main__":
-    unittest.main()
+        assert os.path.exists(jukebox_file)

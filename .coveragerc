@@ -1,9 +1,5 @@
-[report]
+[run]
 omit =
     tests/*
     beetsplug/beetmatch/musly/*
-exclude_lines =
-    assert False
-    raise NotImplementedError
-    if __name == .__main__.:
-    def __repr__
+    beetsplug/beetmatch/feature/server/*

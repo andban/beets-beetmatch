@@ -1,4 +1,3 @@
-import sys
 from base64 import b64encode
 from concurrent import futures
 from logging import Logger
@@ -121,6 +120,8 @@ class JukeboxCommand(Subcommand):
     def analyze_track(self, item: Item, jukebox=None, write=False):
         if not jukebox:
             jukebox = self._config.get_jukebox()
+            if not jukebox:
+                return
 
         duration = item.length
         if not duration:
@@ -148,13 +149,6 @@ class JukeboxCommand(Subcommand):
 
         except MuslyError as error:
             self._log.exception("Analyzing item failed: %s", error)
-
-
-def _convert_time_to_sec(time_str: str):
-    if not time_str:
-        return sys.maxsize
-
-    return sum(x * float(t) for x, t in zip([1, 60, 3600], reversed(time_str.split(":"))))
 
 
 def _find_items_to_analyze(
