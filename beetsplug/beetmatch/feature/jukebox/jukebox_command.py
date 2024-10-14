@@ -62,9 +62,9 @@ class JukeboxCommand(Subcommand):
         )
         super(JukeboxCommand, self).__init__(
             parser=self.parser,
-            name="beetmatch-jukebox",
-            aliases=["bmj"],
-            help="Update jukeboxes",
+            name="beetmatch-musly",
+            aliases=["bmm"],
+            help="Analyze tracks and update Musly jukeboxes",
         )
 
     def func(self, lib: Library, options, arguments):
