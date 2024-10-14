@@ -32,8 +32,8 @@ class PlaylistCommand(Subcommand):
             "--jukebox",
             type="string",
             dest="jukebox_name",
-            default=None,
-            help="Name of the jukebox to generate playlist from (required)"
+            default="all",
+            help="[default: 'all'] Name of the jukebox to generate playlist from"
         )
         self.parser.add_option(
             "-t",
