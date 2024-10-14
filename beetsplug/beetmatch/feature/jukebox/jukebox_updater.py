@@ -25,16 +25,42 @@ class JukeboxUpdater(object):
 
         items = _select_analyzed_items(self.lib, jukebox.method(), query)
         sample_size = min(999, len(items))
-        seed_items = _stratified_sample(items, sample_size, lambda item: item.get("style").split(", "))
+        # seed_items = _stratified_sample(items, sample_size, lambda item: item.get("style").split(", "))
 
-        self.log.info("found %d items from which %d will be used as sample", len(items), len(seed_items))
+        while True:
+            seed_items = _random_sample(items, sample_size)
 
-        tracks = []
-        for item in seed_items:
-            track = jukebox.track_from_bytearray(b64decode(item.get("musly_track")))
-            tracks.append(track)
+            self.log.info("found %d items from which %d will be used as sample", len(items), len(seed_items))
 
-        jukebox.set_style(tracks)
+            tracks = []
+            for item in seed_items:
+                track = jukebox.track_from_bytearray(b64decode(item.get("musly_track")))
+                tracks.append(track)
+
+            jukebox.set_style(tracks)
+
+            if _verify_jukebox(items, jukebox):
+                break
+
+            self.log.debug("musly jukebox not valid. retrying...")
+
+
+def _verify_jukebox(items: list[Item], jukebox: MuslyJukebox):
+    item_sample = sample(items, k=min(100, len(items)))
+
+    seed_item = item_sample[0]
+    seed_track = jukebox.track_from_bytearray(b64decode(seed_item.get("musly_track")))
+
+    other_items = item_sample[1:]
+    other_ids = [item.id for item in other_items]
+    other_tracks = [jukebox.track_from_bytearray(b64decode(item.get("musly_track"))) for item in other_items]
+
+    jukebox.add_tracks([seed_track] + other_tracks, [seed_item.id] + other_ids)
+    similarities = jukebox.compute_similarity(seed_track, seed_item.id, other_tracks, other_ids)
+
+    jukebox.remove_tracks([seed_item.id] + other_ids)
+
+    return len(set(similarities)) != 1
 
 
 def _select_analyzed_items(lib: Library, method: str, query: Query = None):
@@ -45,7 +71,11 @@ def _select_analyzed_items(lib: Library, method: str, query: Query = None):
         ]
     )]
 
-    return lib.items(AndQuery(all_queries))
+    return list(lib.items(AndQuery(all_queries)))
+
+
+def _random_sample(items, k: int):
+    return sample(items, k=k)
 
 
 def _stratified_sample(items, k: int, categorizer: Callable[[dict], list]):
