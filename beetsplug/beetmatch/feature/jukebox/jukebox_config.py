@@ -1,4 +1,5 @@
 import warnings
+from functools import cached_property
 from typing import Union
 
 import confuse
@@ -26,11 +27,17 @@ class JukeboxConfig(BaseConfig):
         super(JukeboxConfig, self).__init__(config)
         self._config.add(_DEFAULT_CONFIG)
 
-    @property
+    @cached_property
     def jukeboxes(self):
-        return self._config['jukeboxes'].get(list)
+        jukeboxes = self._config['jukeboxes'].get(list)
+        if not any(j["name"] == "all" for j in jukeboxes):
+            jukeboxes.append({
+                "name": "all",
+                "query": []
+            })
+        return jukeboxes
 
-    @property
+    @cached_property
     def jukebox_names(self):
         return [jukebox["name"] for jukebox in self.jukeboxes]
 
@@ -52,15 +59,15 @@ class JukeboxConfig(BaseConfig):
             filename=self._get_musly_jukebox_filename(name)
         )
 
-    @property
+    @cached_property
     def musly_enabled(self):
         return self._config['musly']['enabled'].get() and musly.libmusly.library_present()
 
-    @property
+    @cached_property
     def musly_threads(self):
         return self._config['musly']['threads'].get(confuse.Integer())
 
-    @property
+    @cached_property
     def musly_data_dir(self):
         return self._config['musly']['data_dir'].get(
             confuse.Path(in_app_dir=True)).resolve()
@@ -69,12 +76,17 @@ class JukeboxConfig(BaseConfig):
         if not self.musly_enabled:
             return None
 
+        musly_config = self._get_musly_config()
+
         try:
             if not name:
                 return MuslyJukebox(**self._get_musly_config())
 
             with open(self._get_musly_jukebox_filename(name), "rb") as fh:
-                return MuslyJukebox.load_from(fh)
+                jukebox = MuslyJukebox.load_from(fh)
+                if jukebox.method() == musly_config.get("method"):
+                    return jukebox
+                return MuslyJukebox(**self._get_musly_config())
         except FileNotFoundError:
             return MuslyJukebox(**self._get_musly_config())
         except MuslyError as e:
