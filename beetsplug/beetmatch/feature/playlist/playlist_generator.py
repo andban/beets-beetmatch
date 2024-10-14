@@ -1,15 +1,16 @@
 import logging
+import math
+from random import sample
 from typing import List
 
 from beets.library import Item
 
-from beetsplug.beetmatch.common import pick_random_item
 from beetsplug.beetmatch.musly import MuslyJukebox
 from .cooldown import Cooldown
 from .playlist_config import PlaylistConfig
 from ..jukebox import Jukebox
 
-TOP_N = 10
+TOP_N = 5
 
 
 class MatchItem:
@@ -55,17 +56,49 @@ class PlaylistGenerator(object):
                 continue
 
             distance = self.distance_measure(self.seed_item, item)
-            if len(most_similar_items) < TOP_N or distance <= most_similar_items[-1].distance:
+            if not math.isnan(distance):
                 most_similar_items.append(MatchItem(item, index, distance))
-                most_similar_items.sort(key=lambda m: m.distance)
-                max_distance = most_similar_items[min(len(most_similar_items), TOP_N) - 1].distance
-                most_similar_items = [m for m in most_similar_items if m.distance <= max_distance]
 
         if not most_similar_items:
             raise StopIteration
 
-        selected, _ = pick_random_item(most_similar_items)
+        selected = _pick_random_match_with_bias(most_similar_items)
+
         del self.items[selected.index]
 
         self.seed_item = selected.item
-        return self.seed_item, selected.distance
+        return selected.item, selected.distance
+
+
+def _pick_random_match_with_bias(items: list[MatchItem]):
+    if len(items) == 1:
+        return items[0]
+
+    items.sort(key=lambda i: i.distance, reverse=True)
+
+    top_n = max(TOP_N, len(items))
+    max_distance = max(items[-top_n].distance, percentile(items, 0.99))
+
+    selection_pool = sorted([item for item in items if item.distance <= max_distance], key=lambda i: i.distance,
+                            reverse=True)
+
+    counts_by_distance = [max(1, int(100 * (1 - (item.distance / max_distance)))) for item in selection_pool]
+    pick = sample(selection_pool, counts=counts_by_distance, k=1)
+
+    return pick[0]
+
+
+def percentile(items, p, key=lambda i: i.distance):
+    if not items:
+        return None
+
+    k = (len(items) - 1) * p
+    f = math.floor(k)
+    c = math.ceil(k)
+
+    if f == c:
+        return key(items[int(k)])
+
+    d0 = key(items[int(f)])
+    d1 = key(items[int(c)])
+    return (d0 + d1) / 2
