@@ -76,7 +76,7 @@ def _pick_random_match_with_bias(items: list[MatchItem]):
 
     items.sort(key=lambda i: i.distance, reverse=True)
 
-    top_n = max(TOP_N, len(items))
+    top_n = min(TOP_N, len(items))
     max_distance = max(items[-top_n].distance, percentile(items, 0.99))
 
     selection_pool = sorted([item for item in items if item.distance <= max_distance], key=lambda i: i.distance,
