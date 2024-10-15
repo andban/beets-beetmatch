@@ -76,3 +76,13 @@ def import_optional(
             warnings.warn(msg, UserWarning, stacklevel=2)
 
         return None
+
+
+def normalize(value, low, high):
+    if high == low:
+        return 1
+    return (value - low) / (high - low)
+
+
+def bisect_left(a, x, key=lambda v: v):
+    return next(i[0] for i in enumerate(a) if key(i[1]) >= x)

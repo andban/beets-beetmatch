@@ -10,22 +10,22 @@ class NumberDistance(Distance):
         self.min_value = min_value
         self.max_value = max_value
 
+    def get_value(self, item):
+        raw_value = item.get(self.key, None)
+        if raw_value is None:
+            return None
+
+        try:
+            return min(max(self.min_value, float(raw_value)), self.max_value)
+        except TypeError:
+            return None
+
     def similarity(self, a, b):
         return 1 - self.distance(a, b)
 
     def distance(self, a: dict, b: dict):
-        a_value = None
-        try:
-            a_value = min(max(self.min_value, float(a.get(self.key))), self.max_value)
-        except TypeError:
-            pass
-
-        b_value = None
-        try:
-            b_value = min(max(self.min_value, float(b.get(self.key))), self.max_value)
-        except TypeError:
-            pass
-
+        a_value = self.get_value(a)
+        b_value = self.get_value(b)
         if a_value is None or b_value is None:
             return 1.0
 

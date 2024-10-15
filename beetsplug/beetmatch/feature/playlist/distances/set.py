@@ -1,4 +1,4 @@
-from typing import Any, Callable, Set
+from typing import Any, Callable, Set, Union
 
 from .distance import Distance
 
@@ -10,11 +10,11 @@ class SetDistance(Distance):
     ignore: Set[str]
 
     def __init__(
-        self,
-        key,
-        ignore=None,
-        transformer: Callable[[Any], Set] = lambda v: set(v),
-        **kwargs,
+            self,
+            key,
+            ignore=None,
+            transformer: Callable[[Any], Set] = lambda v: set(v),
+            **kwargs,
     ):
         super().__init__(key)
 
@@ -24,9 +24,13 @@ class SetDistance(Distance):
         self.transformer = transformer
         self.ignore = set(ignore)
 
+    def get_value(self, item) -> Union[set, None]:
+        value = item.get(self.key, set())
+        return self.transformer(value) - self.ignore
+
     def similarity(self, a, b):
-        a_values = self.transformer(a.get(self.key, set())) - self.ignore
-        b_values = self.transformer(b.get(self.key, set())) - self.ignore
+        a_values = self.get_value(a)
+        b_values = self.get_value(b)
 
         if not a_values or not b_values:
             return 0.0

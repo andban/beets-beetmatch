@@ -10,6 +10,9 @@ class Distance(ABC):
     def get_key(self):
         return self.key
 
+    def get_value(self, item):
+        pass
+
     @abstractmethod
     def distance(self, a, b):
         """Compute the distance between two items `a` and `b`"""

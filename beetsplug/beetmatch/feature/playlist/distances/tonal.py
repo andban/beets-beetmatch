@@ -1,6 +1,8 @@
+from typing import Union
+
 from .distance import Distance
 
-STANDARD = {
+_CIRCLE_OF_FITHS_INDEX = {
     "B": 0,
     "G#m": 0,
     "F#": 1,
@@ -30,8 +32,7 @@ STANDARD = {
 
 def standard_mapper(key: str, **kwargs):
     def mapper(item):
-        v = item.get(key, None)
-        return v, STANDARD[v] if v else None
+        return item.get(key, None)
 
     return mapper
 
@@ -41,12 +42,9 @@ def essentia_mapper(key: str, key_scale: str, **kwargs):
         key_value = item.get(key, None)
         scale_value = item.get(key_scale, None)
         if not key_value or not scale_value:
-            return None, None
+            return None
 
-        if scale_value == "minor":
-            key_value += "m"
-
-        return key_value, STANDARD[key_value]
+        return key_value if scale_value == "major" else f"{key_value}m"
 
     return mapper
 
@@ -66,11 +64,17 @@ class TonalDistance(Distance):
                 "tonal distance '%s': invalid notation option '%s'", key, notation
             )
 
-    def similarity(self, a, b):
-        a_scale, a_position = self.mapper(a)
-        b_scale, b_position = self.mapper(b)
+    def get_value(self, item) -> Union[str, None]:
+        return self.mapper(item)
 
-        if not a_scale or not b_scale:
+    def similarity(self, a, b):
+        a_scale = self.get_value(a)
+        b_scale = self.get_value(b)
+
+        a_position = _CIRCLE_OF_FITHS_INDEX.get(a_scale, None)
+        b_position = _CIRCLE_OF_FITHS_INDEX.get(b_scale, None)
+
+        if a_position is None or b_position is None:
             return 0.0
 
         if a_scale == b_scale or a_position == b_position:

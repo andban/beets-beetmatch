@@ -153,7 +153,8 @@ class PluginTest:
     def add_item_fixture(self, **attributes):
         item = self.create_item(**attributes)
         extension = item["format"].lower()
-        item["path"] = os.path.join(FIXTURE_DIR, bytestring_path("audio." + extension))
+        if "path" not in attributes:
+            item["path"] = os.path.join(FIXTURE_DIR, bytestring_path("audio." + extension))
         item.add(self.lib)
         item.move(operation=MoveOperation.COPY)
         item.store()

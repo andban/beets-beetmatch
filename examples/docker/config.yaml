@@ -33,17 +33,13 @@ beetmatch:
     threads: 4
 
   jukeboxes:
-    - name: ambient
-      query:
-        - "style::Ambient"
-        - "length:..30:00"
     - name: electronic
       query:
         - "genre::Electronic"
         - "length:..30:00"
     - name: rock
       query:
-        - "genre::(Rock|Pop|Country|Funk)"
+        - "genre::Rock"
         - "length:..30:00"
     - name: all
       query:

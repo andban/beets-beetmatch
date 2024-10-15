@@ -3,8 +3,9 @@ import stat
 import sys
 
 import pytest
+from beets.util import bytestring_path
 
-from tests.helper import PluginTest
+from tests.helper import PluginTest, FIXTURE_DIR
 from tests.io_helper import control_stdin
 
 
@@ -128,8 +129,9 @@ class TestJukeboxCommand(PluginTest):
             }
         })
 
-        self.add_item(genre=["Electronic"], title="Seed Track")
-        self.add_item(genre=["Rock"])
+        self.add_item(genre=["Electronic"], title="Seed Track",
+                      path=os.path.join(FIXTURE_DIR, bytestring_path("sample-12s.mp3")))
+        self.add_item(genre=["Rock"], path=os.path.join(FIXTURE_DIR, bytestring_path("sample-15s.mp3")))
         self.add_item(genre=["Electronic", "Rock"])
 
         self.run_command("beetmatch-generate", "-j", "test_jukebox", "-t", "3")

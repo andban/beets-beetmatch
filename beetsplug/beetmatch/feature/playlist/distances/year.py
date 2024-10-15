@@ -8,9 +8,16 @@ class YearDistance(Distance):
         super().__init__(key)
         self.max_diff = abs(max_diff)
 
+    def get_value(self, item):
+        raw_value = item.get(self.key, None)
+        if raw_value is None:
+            return None
+
+        return int(raw_value)
+
     def similarity(self, a, b):
-        a_year = a.get(self.key, None)
-        b_year = b.get(self.key, None)
+        a_year = self.get_value(a)
+        b_year = self.get_value(b)
 
         if a_year is None or b_year is None:
             return 0.0

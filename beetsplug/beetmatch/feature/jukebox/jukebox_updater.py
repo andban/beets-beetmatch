@@ -1,5 +1,6 @@
 import logging
 from base64 import b64decode
+from math import isnan
 from random import choice, sample
 from typing import Callable
 
@@ -60,7 +61,7 @@ def _verify_jukebox(items: list[Item], jukebox: MuslyJukebox):
 
     jukebox.remove_tracks([seed_item.id] + other_ids)
 
-    return len(set(similarities)) != 1
+    return len(set(similarities)) != 1 and not isnan(similarities[0])
 
 
 def _select_analyzed_items(lib: Library, method: str, query: Query = None):

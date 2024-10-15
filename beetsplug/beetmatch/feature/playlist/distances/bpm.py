@@ -1,3 +1,5 @@
+from typing import Union
+
 from .distance import Distance
 
 
@@ -8,15 +10,18 @@ class BpmDistance(Distance):
         super().__init__(key)
         self.tolerance = tolerance
 
-    def similarity(self, a, b):
-        a_bpm = a.get(self.key, None)
-        b_bpm = b.get(self.key, None)
+    def get_value(self, item) -> Union[int, None]:
+        return item.get(self.key, None)
 
-        if a_bpm is None or b_bpm is None:
+    def similarity(self, a, b):
+        a_bpm = self.get_value(a)
+        b_bpm = self.get_value(b)
+
+        if not a_bpm or not b_bpm:
             return 0.0
 
         threshold = a_bpm * self.tolerance
-        return 1.0 if abs(int(a_bpm) - int(b_bpm)) <= threshold else 0.0
+        return 1.0 if abs(a_bpm - b_bpm) <= threshold else 0.0
 
     def distance(self, a, b):
         return 1.0 - self.similarity(a, b)

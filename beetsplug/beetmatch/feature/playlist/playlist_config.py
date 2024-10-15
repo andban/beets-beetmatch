@@ -60,9 +60,9 @@ class PlaylistConfig:
 
         return script.resolve() if script else None
 
-    def create_playlist_distance(self, **config: dict):
+    def create_similarity_measure(self, **config: dict):
         attributes = [TrackAttribute(key=key, **a) for key, a in self._config_root["attributes"].get(dict).items()]
         measures = [(a.get_measure(**config), a.weight) for a in attributes]
         agg_measure = distances.EuclideanDistance(measures)
 
-        return lambda a, b: agg_measure.distance(a, b)
+        return lambda a, b: agg_measure.similarity(a, b)
