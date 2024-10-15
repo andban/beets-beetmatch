@@ -10,8 +10,7 @@ from beetsplug.beetmatch.musly import MuslyJukebox
 from .cooldown import Cooldown
 from .playlist_config import PlaylistConfig
 from ..jukebox import Jukebox
-from ...common import default_logger, normalize
-from ...common.helpers import bisect_left
+from ...common import default_logger, normalize, bisect_left
 
 TOP_N = 5
 
@@ -24,7 +23,7 @@ class PlaylistCandidate(NamedTuple):
 
 class PlaylistChooser:
     @abstractmethod
-    def choose_candidate(self, candidates: list[PlaylistCandidate], **kwargs):
+    def choose_candidate(self, candidates: List[PlaylistCandidate], **kwargs):
         pass
 
 
@@ -32,7 +31,7 @@ class BiasedPlaylistChooser(PlaylistChooser):
     def __init__(self, log=default_logger):
         self.log = log
 
-    def choose_candidate(self, candidates: list[PlaylistCandidate], min_value=None, max_value=None):
+    def choose_candidate(self, candidates: List[PlaylistCandidate], min_value=None, max_value=None):
         if not candidates:
             return None
 
@@ -60,7 +59,7 @@ class BiasedPlaylistChooser(PlaylistChooser):
         max_rank = similar_ranks[-1]
 
         counts = [int(99 * normalize(c, low=min_rank, high=max_rank)) + 1 for c in similar_ranks]
-        print(counts, similar_ranks)
+
         return sample(similar_candidates, counts=counts, k=1)[0]
 
 

@@ -2,7 +2,7 @@ import logging
 from base64 import b64decode
 from math import isnan
 from random import choice, sample
-from typing import Callable
+from typing import Callable, List
 
 from beets.dbcore import AndQuery
 from beets.dbcore.query import NoneQuery, NotQuery, Query, MatchQuery
@@ -46,7 +46,7 @@ class JukeboxUpdater(object):
             self.log.debug("musly jukebox not valid. retrying...")
 
 
-def _verify_jukebox(items: list[Item], jukebox: MuslyJukebox):
+def _verify_jukebox(items: List[Item], jukebox: MuslyJukebox):
     item_sample = sample(items, k=min(100, len(items)))
 
     seed_item = item_sample[0]

@@ -3,9 +3,9 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "beetmatch"
+name = "beets-beetmatch"
 version = "0.2.0"
-requires-python = ">= 3.7"
+requires-python = ">= 3.9"
 dependencies = [
     "beets>=1.6.0"
 ]
@@ -22,11 +22,10 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Environment :: Console',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
 ]
 
 [project.optional-dependencies]
