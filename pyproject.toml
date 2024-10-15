@@ -17,7 +17,7 @@ readme = "README.md"
 license = { file = "LICENSE.txt" }
 keywords = ["beets"]
 classifiers = [
-    "Delevopment Status :: 3 - Alpha",
+    'Development Status :: 3 - Alpha',
     'Topic :: Multimedia :: Sound/Audio',
     'License :: OSI Approved :: MIT License',
     'Environment :: Console',
