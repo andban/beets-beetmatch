@@ -1,11 +1,8 @@
 # exclude general clutter
 global-exclude .DS_Store
 
-# include tests, but exclude clutter
-prune test
-recursive-include test/fixtures *
-recursive-exclude test/fixtures *.pyc
-recursive-exclude test/fixtures *.pyo
+# exclude tests
+exclude tests
 
 # include documentation
 include LICENSE.txt
