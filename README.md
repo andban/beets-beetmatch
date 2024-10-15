@@ -11,7 +11,7 @@ The plugin can be installed via pip:
 $ pip install beets-beetmatch
 ```
 
-To activate the plugin add `beetmatch` to the lists of plugins in your beets configuration:
+To activate the plugin add `beetmatch` to the lists of plugins in your beets config.yaml:
 
 ```yaml
 plugins:
@@ -39,7 +39,116 @@ individual tracks.
 
 ## Configuration
 
+This plugin can be configured by providing options in the beets config.yaml under the `beetmatch` section:
+
+- **auto**: automatically analyze imported tracks when musly is available
+- **[jukeboxes](#jukebox)**: define jukeboxes that narrow tracks used for generating playlists from, e.g. songs
+  within the same genre.
+- **[playlist](#playlist)**: defines parameters used for playlist generation
+- **[musly](#musly)**: change if and how musly is used for metadata generation
+
+### jukebox
+
+A jukebox is a sub-set of songs in your library, that can be used to create playlists from.
+For example, you want to create playlists, which are only generated from songs in the 'electronic' genre.
+
+A jukebox entry is made up of the following attributes:
+
+- **name**: The name of the jukebox.
+- **query**: a list of queries that specify which songs should go into the jukebox.
+
+Example:
+
+```yaml
+    jukeboxes:
+      - name: electronic
+        query:
+          - 'genre:electronic'
+          - 'length:..30:00'
+      - name: rock_and_pop
+        query: 'genre:(rock|pop|country)'
+```
+
+### playlist
+
+The playlist sections defines how playlists are generated.
+
+- **default_script**: Define a default script to be call after a playlist was generated.
+- **cooldown**: Define how many songs need to be selected before another song of the same artist or album can be added
+  to a playlist.
+- **attributes**: Configure which attributes of a song are used for similarity computation and how they should be
+  measured and weighted. The available attribute types are described further [below](#attribute-types).
+
+Example:
+
+```yaml
+    playlist:
+      default_script: '~/.config/beets/scripts/music-create-playlist'
+      cooldown:
+        artist: 5
+        album: 2
+      attributes:
+        bpm:
+          type: BpmDistance
+          weight: 0.4
+          config:
+            tolerance: 0.04
+        genre:
+          type: ListDistance
+          weight: 0.3
+        year:
+          type: YearDistance
+          weight: 0.3
+          config:
+            max_diff: 5
+```
+
+### musly
+
+When libmusly is installed, it's setup for track analysis can be configured in this section.
+
+- **enabled**: Whether to enable track analysis.
+- **threads**: Number of threads to use when analysing the library.
+- **method**: The algorithm that musly should use for track analysis one of `timbre` or `mandelellis` (not tested).
+- **data_dir**: Where to store musly jukebox information inside `BEETSDIR`
+
+Example:
+
+```yaml
+  musly:
+    enabled: yes
+    threads: 2
+    method: timbre
+    data_dir: beetmatch
+```
+
 ## Usage
+
+### Update Jukeboxes
+
+In case you want to use libmusly in track similarity computations, you will need to analyze the tracks and update
+musly jukeboxes first.
+It is recommended to trigger an update whenever you added a lot of new songs to your library, or when you feel that the
+results are somehow off.
+
+```bash
+$ beet beetmatch-musly --write --update
+```
+
+```
+Analyze tracks and update musly jukeboxes
+
+Usage: beet beetmatch-musly
+
+Options:
+  -h, --help            show this help message and exit
+  -u, --update          Update jukeboxes with new musly data
+  -w, --write           Write analysis results to meta data database
+  -f, --force           [default: False] force analysis of previously analyzed
+                        items
+  -t THREADS, --threads=THREADS
+                        [default: 4] number of threads to use for analysis
+```
 
 ### Generate Playlists
 
@@ -56,44 +165,19 @@ Options:
                         Name of the jukebox to generate playlist from
                         (required)
   -t NUMTRACKS, --num-tracks=NUMTRACKS
-                        Maximum number of tracks
+                        Maximum number of tracks to add to the playlist.
   -d DURATION, --duration=DURATION
-                        Duration of playlist in minutes (its not a hard limit)
+                        Approximate duration of playlist in minutes.
   -s SCRIPT, --script=SCRIPT
-                        Call script after playlist was generated
+                        Call script after playlist was generated.
+                        This overrides the default_script defined in the configuration.
   -q QUERY, --query=QUERY
-                        The first track to base playlist on
+                        A query that is used to select the first song in the playlist.
+                        If the query results in more than one song, a song can be selected from the result.
+                        In case no query is given, a random sonf from the jukebox is selected.
 ```
 
-### Analyze Tracks
-
-In case musly should be used to determine track similarity, all tracks need to be analysed first:
-
-```bash
-$ beet beetmatch-analyze -w
-```
-
-```
-Usage: beet beetmatch-analyze
-
-Options:
-  -h, --help            show this help message and exit
-  -w, --write           Write analysis results to meta data database
-  -f, --force           [default: False] force analysis of previously analyzed
-                        items
-  -t THREADS, --threads=THREADS
-                        [default: 4] number of threads to use for analysis
-```
-
-### Update Jukeboxes
-
-To allow musly to compute track similarity, it uses a sample set of each jukebox:
-
-```bash
-$ beet beetmatch-update -w
-```
-
-## Attribute Distances
+## Attribute Types
 
 ### Tonal
 
@@ -112,6 +196,9 @@ attributes:
     config:
       key_scale: key_scale
 ```
+
+When the scale attribute contains a combinded key/scale, like the attribute provided by the keyfinder plugin. No
+additional config is needed.
 
 ### BPM
 
@@ -196,8 +283,8 @@ $ docker run -it \
 
 beets@docker:/var/lib/beets$ beet import /var/lib/music
 # this should take quite a while
-beets@docker:/var/lib/beets$ beet bmj -u -w
-beets@docker:/var/lib/beets$ beet bmg -j rock -t 10
+beets@docker:/var/lib/beets$ beet bmm -u -w
+beets@docker:/var/lib/beets$ beet bmg -j electronic -t 10
 ```
 
 After all these commands are done, you should find a rock.m3u playlist in the examples/docker/playlist folder.

@@ -47,11 +47,12 @@ class BiasedPlaylistChooser(PlaylistChooser):
 
         rank_threshold = 0.8
         first_candidate_index = len(candidates_ranked)
-        while len(candidates_ranked) - first_candidate_index < 10 and first_candidate_index > 2:
+        while len(candidates_ranked) - first_candidate_index < 10 and first_candidate_index > 0:
             first_candidate_index = bisect_left(candidates_ranked, rank_threshold, key=lambda cr: cr[1])
             rank_threshold -= 0.02
-            if first_candidate_index < 1:
-                first_candidate_index = 1
+
+        if first_candidate_index < 1:
+            first_candidate_index = 1
 
         similar_candidates, similar_ranks = zip(*candidates_ranked[first_candidate_index:])
 

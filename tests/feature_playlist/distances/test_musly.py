@@ -37,7 +37,7 @@ class TestMuslyDistance:
         measure = MuslyDistance(jukebox=jukebox)
 
         assert measure.distance(a, b) == float("inf")
-        assert_almost_equal(measure.similarity(a, b), 0.0)
+        assert_almost_equal(measure.similarity(a, b), -float("inf"))
 
     def test_max_when_one_not_analyzed(self):
         a = {}
@@ -46,7 +46,7 @@ class TestMuslyDistance:
         measure = MuslyDistance(jukebox=jukebox)
 
         assert measure.distance(a, b) == float("inf")
-        assert_almost_equal(measure.similarity(a, b), 0.0)
+        assert_almost_equal(measure.similarity(a, b), -float("inf"))
 
 
 def _create_jukebox():
