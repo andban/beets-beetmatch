@@ -326,7 +326,7 @@ def jukebox_track_from_audio_file(jukebox: JukeboxStruct, filename: str, start, 
         filename = BYTES_TYPE(filename, encoding="utf-8")
 
     check_return_value(_libmusly.musly_track_analyze_audiofile(
-        jukebox, filename, start, length, track_ptr
+        jukebox, filename, length, start, track_ptr
     ), f"failed to analyze audio file {filename}")
 
     return track_ptr
