@@ -7,7 +7,7 @@ name = "beets-beetmatch"
 version = "0.2.1"
 requires-python = ">= 3.9"
 dependencies = [
-    "beets>=1.6.0"
+    "beets >= 1.6.0",
 ]
 description = "beets plugin for generating playlists of songs that somehow match"
 authors = [
@@ -29,11 +29,13 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-lint = [
-    "ruff ~= 0.6.9"
+dev = [
+    "pytest >= 8.3.3,< 8.4.0",
+    "pytest-cov >= 6.0,< 6.1",
+    "ruff >= 0.6.9,< 0.8.0 ",
 ]
-test = [
-    "pytest-cov ~=5.0.0"
+musly = [
+    "pymusly >= 1.0.3,< 2.0.0"
 ]
 
 [project.urls]

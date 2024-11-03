@@ -14,22 +14,23 @@ beetmatch:
   auto: yes
 
   musly:
-    enabled: yes
     threads: 2
-    # musly similarity method (timbre|)
-    method: timbre
+    # store musly jukebox information at $BEETS_CONFIG_DIR/beetmatch
     data_dir: beetmatch
 
   jukeboxes:
+    # a jukebox that only contains tracks with Ambient in their style attribute
     - name: ambient
       query: 'style:Ambient'
+    # a jukebox that only contains electronic music, but no psy-trance
     - name: electronic
       query: 'genre:electronic ^style::Psy-Trance'
+    # rock, pop & country
     - name: rock
       query: 'genre:(Rock|Pop|Country)'
 
   playlist:
-    # default script to call when generating playlists
+    # default script to call after a playlists was generated
     default_script: '~/.config/beets/scripts/music-create-playlist'
 
     cooldown:
@@ -38,15 +39,24 @@ beetmatch:
       # minimum number of tracks between two tracks from the same album
       album: 2
 
+    selection:
+      # consider only songs with at lease 90% of the highest similarity of all candidates
+      pickiness: 0.9
+      # but lower pickiness until we have at least 5 candidates
+      minimum_pool_size: 5
+
     attributes:
+      # consider tracks with a high overlap of genres more similar
       genre:
         type: ListDistance
         weight: 0.3
+      # consider tracks that were released within a 10-year window (+/- 5 years) as similar
       year:
         type: YearDistance
         weight: 0.3
         config:
           max_diff: 5
+      # consider tracks with a maximum of 4% bpm difference as similar
       bpm:
         type: BpmDistance
         weight: 0.4

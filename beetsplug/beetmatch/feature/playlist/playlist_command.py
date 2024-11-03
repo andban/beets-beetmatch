@@ -33,7 +33,7 @@ class PlaylistCommand(Subcommand):
             type="string",
             dest="jukebox_name",
             default="all",
-            help="[default: 'all'] Name of the jukebox to generate playlist from"
+            help="[default: 'all'] Name of the jukebox to generate playlist from",
         )
         self.parser.add_option(
             "-t",
@@ -82,9 +82,11 @@ class PlaylistCommand(Subcommand):
         jukebox = self.jukebox_config.get_jukebox(options.jukebox_name)
         if not jukebox:
             raise UserError(
-                'no jukebox configuration with the name "%s" found', options.jukebox_name
+                'no jukebox configuration with the name "%s" found',
+                options.jukebox_name,
             )
 
+        track_selector = self.playlist_config.playlist_selector
         if options.query:
             seed_item = select_item_interactive(lib, jukebox.get_query(options.query))
         else:
@@ -100,14 +102,15 @@ class PlaylistCommand(Subcommand):
             jukebox=jukebox,
             items=items,
             seed_item=seed_item,
-            log=__logger__
+            candidate_chooser=track_selector,
+            log=__logger__,
         )
 
         playlist = [seed_item]
         duration = 0
         for item, distance in generator:
             playlist.append(item)
-            duration += item.length
+            duration += item.length / 60
 
             if options.duration and duration >= options.duration:
                 break
@@ -119,11 +122,13 @@ class PlaylistCommand(Subcommand):
         ui.print_("\nGenerated playlist:")
         for i, item in enumerate(playlist):
             ui.print_(
-                track_fmt.format("{idx:>3}. {item.title} - {item.artist} - {item.album}\n"
-                                 "     [Year: {item.year}] [BPM: {item.bpm:>3}] [Key: {item.key}/{item.key_scale}]\n"
-                                 "     [{item.genre}: {item.style}]",
-                                 idx=i + 1, item=item
-                                 )
+                track_fmt.format(
+                    "{idx:>3}. {item.title} - {item.artist} - {item.album}\n"
+                    "     [Year: {item.year}] [BPM: {item.bpm:>3}] [Key: {item.key}/{item.key_scale}]\n"
+                    "     [{item.genre}: {item.style}]",
+                    idx=i + 1,
+                    item=item,
+                )
             )
 
         self.execute_script(
@@ -137,8 +142,7 @@ class PlaylistCommand(Subcommand):
         if not script_path:
             return
 
-        __logger__.debug(
-            "executing script '{script}'...".format(script=script_path))
+        __logger__.debug("executing script '{script}'...".format(script=script_path))
 
         try:
             cmd = [script_path, playlist_name]
@@ -155,7 +159,9 @@ def _find_seed_item(
         jukebox_config: Jukebox,
         query: str = None,
 ):
-    seed_item_candidates = list(lib.items(jukebox_config.get_query(additional_query=query)))
+    seed_item_candidates = list(
+        lib.items(jukebox_config.get_query(additional_query=query))
+    )
     if not seed_item_candidates:
         return None
 
@@ -169,7 +175,7 @@ def _find_seed_item(
 
 
 class PartialFormatter(string.Formatter):
-    def __init__(self, missing='-', bad_fmt='!!'):
+    def __init__(self, missing="-", bad_fmt="!!"):
         self.missing, self.bad_fmt = missing, bad_fmt
 
     def get_field(self, field_name, args, kwargs):

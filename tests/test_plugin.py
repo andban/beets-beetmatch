@@ -23,9 +23,7 @@ class TestBeetmatchPlugin(ImportTest):
 
     @pytest.mark.skipif(not MUSLY_AVAILABLE, reason="libmusly not available")
     def test_auto_import(self, lib, importer):
-        self.config.set({
-            "beetmatch": {"auto": True}
-        })
+        self.config.set({"beetmatch": {"auto": True}})
         self.load_plugins()
 
         importer.run()
@@ -36,9 +34,7 @@ class TestBeetmatchPlugin(ImportTest):
         assert item.get("musly_method") == "timbre"
 
     def test_disable_auto_import(self, lib, importer):
-        self.config.set({
-            "beetmatch": {"auto": False}
-        })
+        self.config.set({"beetmatch": {"auto": False}})
         self.load_plugins()
 
         importer.run()

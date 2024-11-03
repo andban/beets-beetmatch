@@ -3,36 +3,28 @@ import confuse
 from . import distances
 from .cooldown import Cooldown
 from .track_attribute import TrackAttribute
+from .track_selector import TrackSelectorConfig, TrackSelector
 
 _DEFAULT_CONFIG = {
     "playlist": {
         "default_script": None,
-
         "cooldown": {
             "artist": 0,
             "album": 0,
         },
-
+        "selection": {
+            "pickiness": 0.9,
+            "minimum_pool_size": 5,
+        },
         "attributes": {
-            "genre": {
-                "type": "SetDistance",
-                "weight": 0.34
-            },
-            "year": {
-                "type": "YearDistance",
-                "weight": 0.33,
-                "config": {
-                    "max_diff": 5
-                }
-            },
+            "genre": {"type": "ListDistance", "weight": 0.34},
+            "year": {"type": "YearDistance", "weight": 0.33, "config": {"max_diff": 5}},
             "bpm": {
                 "type": "BpmDistance",
                 "weight": 0.33,
-                "config": {
-                    "tolerance": 0.1
-                }
-            }
-        }
+                "config": {"tolerance": 0.1},
+            },
+        },
     }
 }
 
@@ -56,12 +48,22 @@ class PlaylistConfig:
     @property
     def playlist_script(self):
         script = self._config_root["default_script"].get(
-            confuse.Optional(confuse.Path(in_app_dir=True)))
+            confuse.Optional(confuse.Path(in_app_dir=True))
+        )
 
         return script.resolve() if script else None
 
+    @property
+    def playlist_selector(self):
+        config: TrackSelectorConfig = self._config_root["selection"].get(dict)
+
+        return TrackSelector(config=config)
+
     def create_similarity_measure(self, **config: dict):
-        attributes = [TrackAttribute(key=key, **a) for key, a in self._config_root["attributes"].get(dict).items()]
+        attributes = [
+            TrackAttribute(key=key, **a)
+            for key, a in self._config_root["attributes"].get(dict).items()
+        ]
         measures = [(a.get_measure(**config), a.weight) for a in attributes]
         agg_measure = distances.EuclideanDistance(measures)
 

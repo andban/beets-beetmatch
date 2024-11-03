@@ -18,9 +18,11 @@ def select_item_interactive(lib: Library, query: Query):
     if not items:
         return None
 
-    _, item = select_item_from_list(items,
-                                    pick_random=False,
-                                    title="The query matched more than one track, please select one:")
+    _, item = select_item_from_list(
+        items,
+        pick_random=False,
+        title="The query matched more than one track, please select one:",
+    )
     return item
 
 

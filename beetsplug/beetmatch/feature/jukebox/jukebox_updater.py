@@ -8,15 +8,19 @@ from beets.dbcore import AndQuery
 from beets.dbcore.query import NoneQuery, NotQuery, Query, MatchQuery
 from beets.library import Library, Item
 
-from beetsplug.beetmatch.musly import MuslyJukebox
+from beetsplug.beetmatch.common import default_logger
+from beetsplug.beetmatch.common.musly import MuslyJukebox
 
 
 class JukeboxUpdater(object):
     log: logging.Logger
     lib: Library
 
-    def __init__(self, library: Library,
-                 log: logging.Logger = logging.getLogger("beetmatch:updater")):
+    def __init__(
+        self,
+        library: Library,
+        log: logging.Logger = logging.getLogger("beetmatch:updater"),
+    ):
         self.lib = library
         self.log = log
 
@@ -24,20 +28,23 @@ class JukeboxUpdater(object):
         if query is None:
             query = list()
 
-        items = _select_analyzed_items(self.lib, jukebox.method(), query)
+        items = _select_analyzed_items(self.lib, jukebox.method, query)
         sample_size = min(999, len(items))
-        # seed_items = _stratified_sample(items, sample_size, lambda item: item.get("style").split(", "))
 
         while True:
+            # seed_items = _stratified_sample(items, sample_size, lambda item: item.get("style").split(", "))
             seed_items = _random_sample(items, sample_size)
 
-            self.log.info("found %d items from which %d will be used as sample", len(items), len(seed_items))
+            self.log.info(
+                "found %d items from which %d will be used as sample",
+                len(items),
+                len(seed_items),
+            )
 
-            tracks = []
-            for item in seed_items:
-                track = jukebox.track_from_bytearray(b64decode(item.get("musly_track")))
-                tracks.append(track)
-
+            tracks = [
+                jukebox.deserialize_track(b64decode(item.get("musly_track")))
+                for item in seed_items
+            ]
             jukebox.set_style(tracks)
 
             if _verify_jukebox(items, jukebox):
@@ -49,28 +56,36 @@ class JukeboxUpdater(object):
 def _verify_jukebox(items: List[Item], jukebox: MuslyJukebox):
     item_sample = sample(items, k=min(100, len(items)))
 
-    seed_item = item_sample[0]
-    seed_track = jukebox.track_from_bytearray(b64decode(seed_item.get("musly_track")))
+    tracks = [
+        (item.id, jukebox.deserialize_track(b64decode(item.get("musly_track"))))
+        for item in item_sample
+    ]
 
-    other_items = item_sample[1:]
-    other_ids = [item.id for item in other_items]
-    other_tracks = [jukebox.track_from_bytearray(b64decode(item.get("musly_track"))) for item in other_items]
+    jukebox.add_tracks(tracks)
+    similarities = jukebox.compute_similarity(tracks[0], tracks[1:])
 
-    jukebox.add_tracks([seed_track] + other_tracks, [seed_item.id] + other_ids)
-    similarities = jukebox.compute_similarity(seed_track, seed_item.id, other_tracks, other_ids)
+    jukebox.remove_tracks([track[0] for track in tracks])
 
-    jukebox.remove_tracks([seed_item.id] + other_ids)
+    if len(set(similarities)) == 1:
+        default_logger.info("all same")
+        return False
+    if all(isnan(s) for s in similarities):
+        default_logger.info("inf")
+        return False
 
-    return len(set(similarities)) != 1 and not isnan(similarities[0])
+    return True
 
 
 def _select_analyzed_items(lib: Library, method: str, query: Query = None):
-    all_queries = [query, AndQuery(
-        [
-            NotQuery(NoneQuery("musly_track", fast="musly_track" in Item._fields)),
-            MatchQuery("musly_method", method, fast="musly_method" in Item._fields)
-        ]
-    )]
+    all_queries = [
+        query,
+        AndQuery(
+            [
+                NotQuery(NoneQuery("musly_track", fast="musly_track" in Item._fields)),
+                MatchQuery("musly_method", method, fast="musly_method" in Item._fields),
+            ]
+        ),
+    ]
 
     return list(lib.items(AndQuery(all_queries)))
 
@@ -105,8 +120,7 @@ def _stratified_sample(items, k: int, categorizer: Callable[[dict], list]):
             break
 
         category_items = list(
-            filter(lambda i: i not in items_sampled,
-                   all_categories[item_category])
+            filter(lambda i: i not in items_sampled, all_categories[item_category])
         )
         if not category_items:
             continue

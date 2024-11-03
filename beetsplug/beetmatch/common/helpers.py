@@ -1,6 +1,6 @@
 import random
 from types import ModuleType
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Iterable
 
 from beets import ui
 
@@ -56,7 +56,7 @@ def import_optional(
         module: str,
         symbol: str = None,
         package: str = None,
-        error: str = "raise"
+        error: Union[str, None] = "raise",
 ) -> Optional[ModuleType]:
     import importlib
     import warnings
@@ -86,3 +86,17 @@ def normalize(value, low, high):
 
 def bisect_left(a, x, key=lambda v: v):
     return next(i[0] for i in enumerate(a) if key(i[1]) >= x)
+
+
+def extent(collection: Iterable, key=None):
+    min_value = None
+    max_value = None
+
+    for v in collection:
+        value = key(v) if key is not None else v
+        if min_value is None or value < min_value:
+            min_value = value
+        if max_value is None or value > max_value:
+            max_value = value
+
+    return min_value, max_value

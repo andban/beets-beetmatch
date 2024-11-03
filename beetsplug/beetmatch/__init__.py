@@ -7,10 +7,12 @@
 """
 Module for algorithmic playlist generation
 """
+
 from beets.importer import ImportTask
 from beets.plugins import BeetsPlugin
 
 from .common import BaseConfig
+from .common.musly import is_musly_present
 from .feature.jukebox import JukeboxCommand, JukeboxConfig
 from .feature.playlist import PlaylistCommand
 
@@ -20,6 +22,7 @@ from .feature.playlist import PlaylistCommand
 
 class BeetmatchPlugin(BeetsPlugin):
     """Algorithmic playlist generator."""
+
     analyze_cmd: JukeboxCommand
     playlist_cmd: PlaylistCommand
 
@@ -35,11 +38,11 @@ class BeetmatchPlugin(BeetsPlugin):
             self.import_stages = [self.analyze_track]
 
     def commands(self):
-        return [
-            self.analyze_cmd,
-            self.playlist_cmd,
-            # ServerCommand(self.config)
-        ]
+        cmds = [self.playlist_cmd]
+        if is_musly_present():
+            cmds.append(self.analyze_cmd)
+
+        return cmds
 
     def analyze_track(self, _, task: ImportTask):
         config = JukeboxConfig(self.config)
