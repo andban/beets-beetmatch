@@ -1,8 +1,6 @@
 import logging
 import string
-import subprocess
 from optparse import OptionParser, Values
-from sys import stderr, stdout
 
 import confuse
 from beets import ui
@@ -13,6 +11,7 @@ from beetsplug.beetmatch.common import select_item_from_list
 from .library import select_item_random, select_item_interactive, select_items
 from .playlist_config import PlaylistConfig
 from .playlist_generator import PlaylistGenerator
+from .playlist_script import PlaylistScript
 from ..jukebox import Jukebox, JukeboxConfig
 
 __logger__ = logging.getLogger("beets.beetmatch")
@@ -95,6 +94,9 @@ class PlaylistCommand(Subcommand):
         if not seed_item:
             raise UserError("no seed item found")
 
+        playlist_script_path = options.script or self.playlist_config.playlist_script
+        playlist_script = PlaylistScript(playlist_script_path, log=__logger__) if playlist_script_path else None
+
         items = select_items(lib, jukebox.get_query(f"^id:{seed_item.id}"))
 
         generator = PlaylistGenerator(
@@ -131,27 +133,8 @@ class PlaylistCommand(Subcommand):
                 )
             )
 
-        self.execute_script(
-            jukebox.name,
-            playlist,
-            script_override=options.script,
-        )
-
-    def execute_script(self, playlist_name: str, items, script_override: str = None):
-        script_path = script_override or self.playlist_config.playlist_script
-        if not script_path:
-            return
-
-        __logger__.debug("executing script '{script}'...".format(script=script_path))
-
-        try:
-            cmd = [script_path, playlist_name]
-            cmd.extend([item.path for item in items])
-            subprocess.run(cmd, stderr=stderr, stdout=stdout, check=True)
-        except subprocess.CalledProcessError as error:
-            __logger__.error(
-                "Error while running script '%s'", script_path, exc_info=error
-            )
+        if playlist_script:
+            playlist_script.execute(jukebox.name, playlist)
 
 
 def _find_seed_item(
