@@ -4,7 +4,6 @@ from random import sample
 from typing import List
 
 from beets.library import Item
-from more_itertools.more import first
 from typing_extensions import TypedDict, NamedTuple
 
 from beetsplug.beetmatch.common import default_logger, bisect_left
@@ -80,4 +79,4 @@ class TrackSelector:
             len(candidate_pool), self._min_pool_size, adjusted_pickiness, self._pickiness, candidate_pool[0].similarity,
             candidate_pool[-1].similarity)
 
-        return first(sample(candidate_pool, counts=sample_biases, k=1))
+        return sample(candidate_pool, counts=sample_biases, k=1)[0]
