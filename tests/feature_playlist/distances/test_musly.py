@@ -4,8 +4,8 @@ from base64 import b64encode
 import pytest
 from beets.library import Item
 
+from beetsplug.beetmatch.common.musly import create_musly_jukebox
 from beetsplug.beetmatch.feature.playlist.distances import MuslyDistance
-from beetsplug.beetmatch.musly import MuslyJukebox
 from tests.assert_helper import assert_greater_than, assert_almost_equal
 from tests.helper import FIXTURE_DIR, MUSLY_AVAILABLE
 
@@ -50,22 +50,26 @@ class TestMuslyDistance:
 
 
 def _create_jukebox():
-    jukebox = MuslyJukebox(method="timbre")
-    track_a = jukebox.track_from_audio_file(
-        os.path.join(FIXTURE_DIR, b"sample-12s.mp3"), -12, 12
+    jukebox = create_musly_jukebox({"method": "timbre"})
+    track_a = jukebox.track_from_audiofile(
+        filename=os.path.join(FIXTURE_DIR, b"sample-12s.mp3").decode("utf-8"),
+        start=-12,
+        length=12,
     )
-    track_b = jukebox.track_from_audio_file(
-        os.path.join(FIXTURE_DIR, b"sample-15s.mp3"), -15, 15
+    track_b = jukebox.track_from_audiofile(
+        filename=os.path.join(FIXTURE_DIR, b"sample-15s.mp3").decode("utf-8"),
+        start=-15,
+        length=15,
     )
 
     jukebox.set_style([track_a, track_b])
-    jukebox.add_tracks([track_a, track_b], [1, 2])
+    jukebox.add_tracks([(1, track_a), (2, track_b)])
 
     item_a = Item(
-        id=1, musly_track=b64encode(jukebox.track_to_buffer(track_a)).decode("ascii")
+        id=1, musly_track=b64encode(jukebox.serialize_track(track_a)).decode("ascii")
     )
     item_b = Item(
-        id=2, musly_track=b64encode(jukebox.track_to_buffer(track_b)).decode("ascii")
+        id=2, musly_track=b64encode(jukebox.serialize_track(track_b)).decode("ascii")
     )
 
     return jukebox, item_a, item_b

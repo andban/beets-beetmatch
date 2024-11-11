@@ -10,11 +10,11 @@ class SetDistance(Distance):
     ignore: Set[str]
 
     def __init__(
-            self,
-            key,
-            ignore=None,
-            transformer: Callable[[Any], Set] = lambda v: set(v),
-            **kwargs,
+        self,
+        key,
+        ignore=None,
+        transformer: Callable[[Any], Set] = lambda v: set(v),
+        **kwargs,
     ):
         super().__init__(key)
 

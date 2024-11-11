@@ -21,11 +21,8 @@ plugins:
 ### Install Musly (optional)
 
 The plugin supports music similarity computation using [libmusly](https://github.com/dominikschnitzer/musly).
-In order to allow beetmatch to use this functionality, libmusly has to be installed first.
-
-Since musly hasn't seen much development recently, you might encounter difficulties with newer compilers.
-An updated version of the library, that works with recent versions of Linux and macOS, can be
-found [here](https://github.com/andban/musly).
+In order to allow beetmatch to use this functionality, the [pymusly](https://github.com/andban/pymusly) package has to
+be installed first.
 
 ### Helpful Plugins
 
@@ -36,6 +33,8 @@ individual tracks.
 - [keyfinder] computes the musical scale of tracks
 - [xtractor] uses Essentia to provide multiple properties that can be used for track similarity (BPM, scales,
   danceability, etc.)
+- ... any plugin that does add one or more properties to the tracks in your library that can be used to determine
+  musical similarity.
 
 ## Configuration
 
@@ -76,6 +75,12 @@ The playlist sections defines how playlists are generated.
 - **default_script**: Define a default script to be call after a playlist was generated.
 - **cooldown**: Define how many songs need to be selected before another song of the same artist or album can be added
   to a playlist.
+- **selection**: Configure the track selection parameters.  
+  With higher pickiness, the selection will stick to the best matches, for example a pickiness of 1.0 will select only
+  the tracks with the highest similarity, while 0.0 will consider every track.
+  The minimum pool size configures the minimum number of tracks to consider, even if that will mean to lower the
+  pickiness.
+  To always select only the tracks with the highest similarity, set pickiness and minimum_pool_size to 1.
 - **attributes**: Configure which attributes of a song are used for similarity computation and how they should be
   measured and weighted. The available attribute types are described further [below](#attribute-types).
 
@@ -87,6 +92,11 @@ Example:
       cooldown:
         artist: 5
         album: 2
+
+      selection:
+        pickiness: 0.9
+        minimum_pool_size: 10
+
       attributes:
         bpm:
           type: BpmDistance
@@ -116,7 +126,6 @@ Example:
 
 ```yaml
   musly:
-    enabled: yes
     threads: 2
     method: timbre
     data_dir: beetmatch
@@ -124,12 +133,13 @@ Example:
 
 ## Usage
 
-### Update Jukeboxes
+### Update Musly state
 
-In case you want to use libmusly in track similarity computations, you will need to analyze the tracks and update
+In case you want to use libmusly for track similarity computations, you will need to analyze the tracks and update
 musly jukeboxes first.
 It is recommended to trigger an update whenever you added a lot of new songs to your library, or when you feel that the
 results are somehow off.
+You need to install the [pymusly](https://github.com/andban/pymusly) package to enable this command.
 
 ```bash
 $ beet beetmatch-musly --write --update
@@ -158,6 +168,7 @@ $ beet beetmatch-generate --jukebox=<jukebox_name> --tracks=30
 
 ```
 Usage: beet beetmatch-generate
+Example: beet beetmatch-generate --jukebox=all --duration 60 'artist:Air'
 
 Options:
   -h, --help            show this help message and exit
@@ -171,10 +182,6 @@ Options:
   -s SCRIPT, --script=SCRIPT
                         Call script after playlist was generated.
                         This overrides the default_script defined in the configuration.
-  -q QUERY, --query=QUERY
-                        A query that is used to select the first song in the playlist.
-                        If the query results in more than one song, a song can be selected from the result.
-                        In case no query is given, a random sonf from the jukebox is selected.
 ```
 
 ## Attribute Types

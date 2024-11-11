@@ -1,9 +1,7 @@
 import confuse
 from confuse import templates
 
-_DEFAULT_CONFIG = {
-    "auto": True
-}
+_DEFAULT_CONFIG = {"auto": True}
 
 
 class BaseConfig:
@@ -14,4 +12,6 @@ class BaseConfig:
 
     @property
     def auto_import(self):
-        return self._config["auto"].get(templates.Optional(bool, _DEFAULT_CONFIG["auto"]))
+        return self._config["auto"].get(
+            templates.Optional(bool, _DEFAULT_CONFIG["auto"])
+        )

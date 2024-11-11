@@ -32,8 +32,10 @@ class Cooldown(object):
         if self.max_cooldown == 0:
             return
 
-        values = dict([(attr, last_item.get(attr)) for attr in self.attr_cooldowns.keys()])
+        values = dict(
+            [(attr, last_item.get(attr)) for attr in self.attr_cooldowns.keys()]
+        )
 
         self.last_seen.append(values)
         if len(self.last_seen) > self.max_cooldown:
-            self.last_seen = self.last_seen[-self.max_cooldown:]
+            self.last_seen = self.last_seen[-self.max_cooldown :]

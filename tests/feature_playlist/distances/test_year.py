@@ -26,7 +26,7 @@ class TestYearDistance:
     @pytest.mark.parametrize(
         "value_a,value_b", [(None, 2000), (2024, None), (None, None)]
     )
-    def test_year_out_of_range(self, measure, value_a, value_b):
+    def test_year_not_set(self, measure, value_a, value_b):
         a = {"year": value_a}
         b = {"year": value_b}
 

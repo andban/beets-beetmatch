@@ -9,11 +9,10 @@ from beets.library import Library, Item
 from beets.ui import Subcommand
 from confuse import Subview
 
-import beetsplug.beetmatch.musly as musly
 from beetsplug.beetmatch.feature.jukebox.jukebox_updater import JukeboxUpdater
 from .jukebox_config import JukeboxConfig
 from ...common import default_logger
-from ...musly import MuslyError
+from ...common.musly import is_musly_present, MuslyError, set_musly_loglevel
 
 
 class JukeboxCommand(Subcommand):
@@ -30,7 +29,7 @@ class JukeboxCommand(Subcommand):
             action="store_true",
             dest="update",
             default=False,
-            help="Update jukeboxes with new musly data"
+            help="Update jukeboxes with new musly data",
         )
         self.parser.add_option(
             "-w",
@@ -68,19 +67,19 @@ class JukeboxCommand(Subcommand):
         )
 
     def func(self, lib: Library, options, arguments):
-        if not musly.libmusly.library_present():
+        if not is_musly_present():
             return
 
+        set_musly_loglevel(4)
         jukebox_names = arguments if len(arguments) else self._config.jukebox_names
-
-        for name in jukebox_names:
+        for jukebox_name in jukebox_names:
             self._analyze_jukebox(
-                name=name,
+                name=jukebox_name,
                 lib=lib,
                 threads=options.threads,
                 force=options.force,
                 write=options.write,
-                update=options.update
+                update=options.update,
             )
 
     def _update_musly_jukebox(self, name, lib, write=False):
@@ -94,23 +93,26 @@ class JukeboxCommand(Subcommand):
         if write:
             jukebox.save_musly_jukebox()
 
-    def _analyze_jukebox(self, name, lib, threads=1, update=False, force=False, write=False):
+    def _analyze_jukebox(
+            self, name, lib, threads=1, update=False, force=False, write=False
+    ):
         jukebox = self._config.get_jukebox(name)
 
         analysis_jukebox = self._config.get_musly_jukebox()
         items = _find_items_to_analyze(
-            lib, analysis_jukebox.method(), query=jukebox.get_query(), force=force
+            lib, analysis_jukebox.method, query=jukebox.get_query(), force=force
         )
         self._log.info("found %d items to analyze", len(items))
 
         items_processed = 0
         if len(items) > 0:
             with futures.ThreadPoolExecutor(max_workers=threads) as worker:
-                def worker_fn(item):
-                    self.analyze_track(item, jukebox=analysis_jukebox, write=write)
-
-                for _ in worker.map(worker_fn, items):
-                    items_processed += 1
+                tasks = [
+                    worker.submit(_do_analysis, item, analysis_jukebox, write, self._log)
+                    for item in items
+                ]
+                futures.wait(tasks)
+                items_processed = sum(1 for task in tasks if task.done())
 
         if update:
             self._update_musly_jukebox(name, lib, write=write)
@@ -123,36 +125,48 @@ class JukeboxCommand(Subcommand):
             if not jukebox:
                 return
 
-        duration = item.length
-        if not duration:
-            self._log.warning("Skipping item because it has no duration")
-            return
+        _do_analysis(item, jukebox, write, log=self._log)
 
-        path = item.get("path").decode("utf-8")
-        if not path:
-            self._log.warning("Skipping item because its path does not exist (%s)", path)
-            return
 
-        try:
-            self._log.info("Analyzing item %s...", path)
+def _do_analysis(item, jukebox, write, log=default_logger):
+    if not jukebox:
+        return
 
-            excerpt_start = -min(48, int(duration))
-            excerpt_length = min(int(duration), 30)
+    duration = item.length
+    if not duration:
+        log.warning("Skipping item because it has no duration")
+        return
 
-            track = jukebox.track_from_audio_file(path, excerpt_start, excerpt_length)
-            track_buffer = jukebox.track_to_buffer(track)
+    path = item.get("path").decode("utf-8")
+    if not path:
+        log.warning(
+            "Skipping item because its path does not exist (%s)", path
+        )
+        return
 
-            if write:
-                setattr(item, "musly_track", b64encode(track_buffer).decode("ascii"))
-                setattr(item, "musly_method", jukebox.method())
-                item.store()
+    try:
+        log.info("Analyzing item %s...", path)
 
-        except MuslyError as error:
-            self._log.exception("Analyzing item failed: %s", error)
+        excerpt_start = -min(48, int(duration))
+        excerpt_length = min(int(duration), 60)
+
+        track = jukebox.track_from_audiofile(
+            path, length=excerpt_length, start=excerpt_start
+        )
+        track_buffer = jukebox.serialize_track(track)
+
+        if write:
+            setattr(item, "musly_track", b64encode(track_buffer).decode("ascii"))
+            setattr(item, "musly_method", jukebox.method)
+            item.store()
+
+    except MuslyError as error:
+        log.exception("Analyzing item failed: %s", error)
 
 
 def _find_items_to_analyze(
-        lib: Library, required_method: str, query: Query, force=False):
+        lib: Library, required_method: str, query: Query, force=False
+):
     combined_query = query
     # exclude already analyzed items
     if not force:

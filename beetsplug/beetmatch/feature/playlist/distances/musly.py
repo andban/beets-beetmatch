@@ -2,7 +2,9 @@ from base64 import b64decode
 from math import isnan
 from typing import Union
 
-from beetsplug.beetmatch.musly import MuslyJukebox, MuslyTrack
+from .... import is_musly_present
+from ....common import default_logger
+from ....common.musly import MuslyJukebox, MuslyTrack
 
 _CACHE = dict()
 
@@ -15,12 +17,14 @@ class MuslyDistance:
         self.jukebox = jukebox
         self.key = key
 
+        if not is_musly_present():
+            default_logger.warn("using musly distance, but no pymusly package present!")
+
     def get_value(self, item) -> Union[MuslyTrack, None]:
         if self.jukebox is None:
             return None
 
         item_id = item.get("id")
-
         if item_id in _CACHE:
             return _CACHE.get(item_id)
 
@@ -28,7 +32,7 @@ class MuslyDistance:
         if base64_track is None:
             return None
 
-        track = self.jukebox.track_from_bytearray(b64decode(base64_track))
+        track = self.jukebox.deserialize_track(b64decode(base64_track))
         _CACHE[item_id] = track
 
         return track
@@ -42,7 +46,7 @@ class MuslyDistance:
         if a_track is None or b_track is None:
             return float("inf")
 
-        return self.jukebox.compute_similarity(a_track, a.id, [b_track], [b.id])[0]
+        return self.jukebox.compute_similarity((a.id, a_track), [(b.id, b_track)])[0]
 
     def similarity(self, a, b) -> float:
         distance = self.distance(a, b)

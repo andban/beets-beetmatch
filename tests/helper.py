@@ -16,9 +16,9 @@ from beets.util import bytestring_path, syspath, arg_encoding, MoveOperation, no
 from confuse import LazyConfig
 from mediafile import MediaFile
 
-from beetsplug.beetmatch.musly import libmusly
+import beetsplug.beetmatch.common.musly as musly
 
-MUSLY_AVAILABLE = libmusly.library_present()
+MUSLY_AVAILABLE = musly.is_musly_present()
 
 _test_dir = bytestring_path(os.path.dirname(__file__))
 FIXTURE_DIR = bytestring_path(os.path.abspath(os.path.join(_test_dir, b"fixtures")))
@@ -154,7 +154,9 @@ class PluginTest:
         item = self.create_item(**attributes)
         extension = item["format"].lower()
         if "path" not in attributes:
-            item["path"] = os.path.join(FIXTURE_DIR, bytestring_path("audio." + extension))
+            item["path"] = os.path.join(
+                FIXTURE_DIR, bytestring_path("audio." + extension)
+            )
         item.add(self.lib)
         item.move(operation=MoveOperation.COPY)
         item.store()
@@ -178,7 +180,7 @@ class ImportTest(PluginTest):
         "move": False,
         "resume": False,
         "singletons": False,
-        "timid": True
+        "timid": True,
     }
     _resource_path = syspath(os.path.join(FIXTURE_DIR, b"sample-12s.mp3"))
 
@@ -200,10 +202,12 @@ class ImportTest(PluginTest):
             ("default", os.path.join("$artist", "$album", "$title")),
         ]
 
-    def prepare_track_for_import(self,
-                                 track_id: int,
-                                 album_path: Union[Path, None] = None,
-                                 album_id: Union[int, None] = None) -> Path:
+    def prepare_track_for_import(
+        self,
+        track_id: int,
+        album_path: Union[Path, None] = None,
+        album_id: Union[int, None] = None,
+    ) -> Path:
         if not album_path:
             album_dir = f"album_{album_id}" if album_id else "album"
             album_path = self.import_path / album_dir
@@ -214,22 +218,26 @@ class ImportTest(PluginTest):
         shutil.copy(self._resource_path, track_path)
 
         medium = MediaFile(track_path)
-        medium.update({
-            "album": "The Album" + (f" {album_id}" if album_id else ""),
-            "albumartist": None,
-            "mb_albumid": None,
-            "comp": None,
-            "artist": "The Artist",
-            "title": f"Song #{track_id}",
-            "track": track_id,
-            "mb_trackid": None,
-        })
+        medium.update(
+            {
+                "album": "The Album" + (f" {album_id}" if album_id else ""),
+                "albumartist": None,
+                "mb_albumid": None,
+                "comp": None,
+                "artist": "The Artist",
+                "title": f"Song #{track_id}",
+                "track": track_id,
+                "mb_trackid": None,
+            }
+        )
         medium.save()
         self.import_media.append(medium)
 
         return track_path
 
-    def prepare_importer(self, import_dir: Union[bytes, None] = None, **kwargs) -> ImportSession:
+    def prepare_importer(
+        self, import_dir: Union[bytes, None] = None, **kwargs
+    ) -> ImportSession:
         self.config["import"].set_args({**self._default_import_config, **kwargs})
         self.importer = self._get_import_session(import_dir or self.import_dir)
         return self.importer

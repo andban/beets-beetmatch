@@ -6,7 +6,6 @@ from beetsplug.beetmatch.common.helpers import import_optional
 
 
 class TestOptionalImport:
-
     def test_existing_import_module(self):
         imported = import_optional("math")
 

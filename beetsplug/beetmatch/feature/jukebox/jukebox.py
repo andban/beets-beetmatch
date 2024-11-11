@@ -7,7 +7,7 @@ from beets.dbcore import Query
 from beets.dbcore.query import TrueQuery, AndQuery
 from beets.library import Item, parse_query_string
 
-from beetsplug.beetmatch.musly import MuslyJukebox
+from ...common.musly import MuslyJukebox
 
 
 class Jukebox:
@@ -16,7 +16,9 @@ class Jukebox:
     _filename: pathlib.Path
     _musly_jukebox: MuslyJukebox
 
-    def __init__(self, name: str, filename: pathlib.Path, musly_jukebox=None, query=None):
+    def __init__(
+        self, name: str, filename: pathlib.Path, musly_jukebox=None, query=None
+    ):
         self._name = name
         self._filename = filename
         self._musly_jukebox = musly_jukebox
@@ -56,16 +58,24 @@ class Jukebox:
         self._filename.parent.mkdir(parents=True, exist_ok=True)
         with open(self._filename, "wb") as fh:
             print(f"filename {self._filename}")
-            self._musly_jukebox.write_to(fh)
+            self._musly_jukebox.serialize_to_stream(fh)
 
     def init_musly_jukebox(self, items: List[Item]):
         if not self.musly_jukebox:
             return
 
-        for item in items:
-            track_data = item.get('musly_track')
-            if track_data is None:
-                continue
+        tracks = [
+            (
+                item.id,
+                self.musly_jukebox.deserialize_track(
+                    b64decode(item.get("musly_track"))
+                ),
+            )
+            for item in items
+            if item.get("musly_track")
+        ]
 
-            track = self.musly_jukebox.track_from_bytearray(b64decode(track_data))
-            self.musly_jukebox.add_tracks([track], [item.id])
+        if not len(tracks):
+            return
+
+        self.musly_jukebox.add_tracks(tracks)

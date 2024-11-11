@@ -10,7 +10,6 @@ from tests.io_helper import control_stdin
 
 
 class TestJukeboxCommand(PluginTest):
-
     @pytest.fixture(autouse=True, name="lib")
     def fixture_lib(self):
         self.setup_beets()
@@ -45,7 +44,6 @@ class TestJukeboxCommand(PluginTest):
             "test_jukebox",
             "-t",
             "3",
-            "-q",
             "title:'Seed Track'",
         )
 
@@ -78,7 +76,6 @@ class TestJukeboxCommand(PluginTest):
                 "test_jukebox",
                 "-t",
                 "3",
-                "-q",
                 "artist:'The Artist'",
             )
 
@@ -113,27 +110,40 @@ class TestJukeboxCommand(PluginTest):
             fh.write(f"#!/bin/sh\ntouch ${self.beets_dir}/$1.m3u")
         os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
-        self.config.set({
-            "beetmatch": {
-                "jukeboxes": [
-                    {
-                        "name": "test_jukebox",
-                        "query": "",
-                    }
-                ],
-                "playlist": {
-                    "default_script": "playlist-script.sh",
-                    "cooldown": {"artist": 0, "album": 0},
-                    "attributes": {"genre": {"type": "ListDistance", "weight": 1}},
-                },
+        self.config.set(
+            {
+                "beetmatch": {
+                    "jukeboxes": [
+                        {
+                            "name": "test_jukebox",
+                            "query": "",
+                        }
+                    ],
+                    "playlist": {
+                        "default_script": "playlist-script.sh",
+                        "cooldown": {"artist": 0, "album": 0},
+                        "attributes": {"genre": {"type": "ListDistance", "weight": 1}},
+                    },
+                }
             }
-        })
+        )
 
-        self.add_item(genre=["Electronic"], title="Seed Track",
-                      path=os.path.join(FIXTURE_DIR, bytestring_path("sample-12s.mp3")))
-        self.add_item(genre=["Rock"], path=os.path.join(FIXTURE_DIR, bytestring_path("sample-15s.mp3")))
+        self.add_item(
+            genre=["Electronic"],
+            title="Seed Track",
+            path=os.path.join(FIXTURE_DIR, bytestring_path("sample-12s.mp3")),
+        )
+        self.add_item(
+            genre=["Rock"],
+            path=os.path.join(FIXTURE_DIR, bytestring_path("sample-15s.mp3")),
+        )
         self.add_item(genre=["Electronic", "Rock"])
 
         self.run_command("beetmatch-generate", "-j", "test_jukebox", "-t", "3")
 
-        assert os.path.exists(os.fsdecode(os.path.join(self.beets_dir, b"test_jukebox.m3u"))) is True
+        assert (
+                os.path.exists(
+                    os.fsdecode(os.path.join(self.beets_dir, b"test_jukebox.m3u"))
+                )
+                is True
+        )
