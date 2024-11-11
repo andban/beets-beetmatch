@@ -1,6 +1,7 @@
 import logging
 import string
-from optparse import OptionParser, Values
+from optparse import OptionParser
+from typing import List, NamedTuple, Union
 
 import confuse
 from beets import ui
@@ -8,13 +9,20 @@ from beets.library import Library
 from beets.ui import Subcommand, UserError
 
 from beetsplug.beetmatch.common import select_item_from_list
-from .library import select_item_random, select_item_interactive, select_items
+from .library import select_item_interactive, select_items, select_item_random
 from .playlist_config import PlaylistConfig
 from .playlist_generator import PlaylistGenerator
 from .playlist_script import PlaylistScript
 from ..jukebox import Jukebox, JukeboxConfig
 
 __logger__ = logging.getLogger("beets.beetmatch")
+
+
+class PlaylistOptions(NamedTuple):
+    jukebox_name: str
+    numtracks: Union[int, None]
+    duration: Union[float, None]
+    script: Union[str, None]
 
 
 class PlaylistCommand(Subcommand):
@@ -58,14 +66,6 @@ class PlaylistCommand(Subcommand):
             default=None,
             help="Call script after playlist was generated",
         )
-        self.parser.add_option(
-            "-q",
-            "--query",
-            type="string",
-            dest="query",
-            default=None,
-            help="The first track to base playlist on",
-        )
 
         super(PlaylistCommand, self).__init__(
             parser=self.parser,
@@ -74,9 +74,16 @@ class PlaylistCommand(Subcommand):
             help="Generate playlist",
         )
 
-    def func(self, lib: Library, options: Values, arguments: list):
+        self.parser.usage += (
+            "\n" "Example: %prog --jukebox=all --duration 60 'artist:Air'"
+        )
+
+    def func(self, lib: Library, options: PlaylistOptions, arguments: List[str]):
         if not options.jukebox_name:
             raise UserError("one jukebox name expected")
+
+        if not options.numtracks and not options.duration:
+            raise ValueError("expected one of --duration or --num-tracks parameters")
 
         jukebox = self.jukebox_config.get_jukebox(options.jukebox_name)
         if not jukebox:
@@ -86,16 +93,18 @@ class PlaylistCommand(Subcommand):
             )
 
         track_selector = self.playlist_config.playlist_selector
-        if options.query:
-            seed_item = select_item_interactive(lib, jukebox.get_query(options.query))
+
+        playlist_script_path = options.script or self.playlist_config.playlist_script
+        playlist_script = PlaylistScript(playlist_script_path, log=__logger__) if playlist_script_path else None
+
+        seed_query = ' '.join(arguments) if arguments else None
+        if seed_query:
+            seed_item = select_item_interactive(lib, jukebox.get_query(seed_query))
         else:
             seed_item = select_item_random(lib, jukebox.get_query())
 
         if not seed_item:
             raise UserError("no seed item found")
-
-        playlist_script_path = options.script or self.playlist_config.playlist_script
-        playlist_script = PlaylistScript(playlist_script_path, log=__logger__) if playlist_script_path else None
 
         items = select_items(lib, jukebox.get_query(f"^id:{seed_item.id}"))
 
@@ -108,30 +117,26 @@ class PlaylistCommand(Subcommand):
             log=__logger__,
         )
 
+        track_fmt = PartialFormatter()
         playlist = [seed_item]
         duration = 0
-        for item, distance in generator:
+
+        ui.print_(track_fmt.format("\nGenerated playlist:"))
+        ui.print_(track_fmt.format("{idx:>3}. {item.title} - {item.artist}", idx=1, item=seed_item))
+
+        for item, similarity in generator:
             playlist.append(item)
             duration += item.length / 60
+
+            ui.print_(
+                track_fmt.format("{idx:>3}. {item.title} - {item.artist} (similarity: {similarity:.3f})",
+                                 idx=len(playlist),
+                                 item=item, similarity=similarity))
 
             if options.duration and duration >= options.duration:
                 break
             if options.numtracks and len(playlist) >= options.numtracks:
                 break
-
-        track_fmt = PartialFormatter()
-
-        ui.print_("\nGenerated playlist:")
-        for i, item in enumerate(playlist):
-            ui.print_(
-                track_fmt.format(
-                    "{idx:>3}. {item.title} - {item.artist} - {item.album}\n"
-                    "     [Year: {item.year}] [BPM: {item.bpm:>3}] [Key: {item.key}/{item.key_scale}]\n"
-                    "     [{item.genre}: {item.style}]",
-                    idx=i + 1,
-                    item=item,
-                )
-            )
 
         if playlist_script:
             playlist_script.execute(jukebox.name, playlist)

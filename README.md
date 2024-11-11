@@ -168,6 +168,7 @@ $ beet beetmatch-generate --jukebox=<jukebox_name> --tracks=30
 
 ```
 Usage: beet beetmatch-generate
+Example: beet beetmatch-generate --jukebox=all --duration 60 'artist:Air'
 
 Options:
   -h, --help            show this help message and exit
@@ -181,10 +182,6 @@ Options:
   -s SCRIPT, --script=SCRIPT
                         Call script after playlist was generated.
                         This overrides the default_script defined in the configuration.
-  -q QUERY, --query=QUERY
-                        A query that is used to select the first song in the playlist.
-                        If the query results in more than one song, a song can be selected from the result.
-                        In case no query is given, a random sonf from the jukebox is selected.
 ```
 
 ## Attribute Types

@@ -16,7 +16,7 @@ class PlaylistScript:
 
     def __init__(self, script_path, log=default_logger):
         if not os.path.exists(script_path):
-            raise FileNotFoundError(f"the given script {script_path} does not exist")
+            raise FileNotFoundError(f"the playlist script {script_path} does not exist")
 
         self._script_path = script_path
         self._log = log

@@ -44,7 +44,6 @@ class TestJukeboxCommand(PluginTest):
             "test_jukebox",
             "-t",
             "3",
-            "-q",
             "title:'Seed Track'",
         )
 
@@ -77,7 +76,6 @@ class TestJukeboxCommand(PluginTest):
                 "test_jukebox",
                 "-t",
                 "3",
-                "-q",
                 "artist:'The Artist'",
             )
 
@@ -144,8 +142,8 @@ class TestJukeboxCommand(PluginTest):
         self.run_command("beetmatch-generate", "-j", "test_jukebox", "-t", "3")
 
         assert (
-            os.path.exists(
-                os.fsdecode(os.path.join(self.beets_dir, b"test_jukebox.m3u"))
-            )
-            is True
+                os.path.exists(
+                    os.fsdecode(os.path.join(self.beets_dir, b"test_jukebox.m3u"))
+                )
+                is True
         )
