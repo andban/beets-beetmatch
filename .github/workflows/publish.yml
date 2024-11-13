@@ -15,13 +15,13 @@ on:
 
 jobs:
   build_sdist:
-    name: Build source distribution
+    name: Build python packages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Build SDist
-        run: pipx run build --sdist
+        run: pipx run build --sdist --wheel
 
       - name: Check metadata
         run: pipx run twine check dist/*
