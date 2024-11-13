@@ -6,7 +6,7 @@
 .vscode/
 
 __pycache__/
-beetmatch.egg-info/
+beets_beetmatch.egg-info/
 build/
 dist/
 htmlcov/
