@@ -10,7 +10,8 @@ from ...common.musly import (
     get_musly_methods,
     get_musly_decoders,
     is_musly_present,
-    create_musly_jukebox, MuslyJukeboxConfig,
+    create_musly_jukebox,
+    MuslyJukeboxConfig,
 )
 from ...feature.jukebox import Jukebox
 

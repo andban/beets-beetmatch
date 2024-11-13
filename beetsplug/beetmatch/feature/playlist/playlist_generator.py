@@ -18,13 +18,13 @@ class PlaylistGenerator(object):
     candidate_chooser: TrackSelector
 
     def __init__(
-            self,
-            jukebox: Jukebox,
-            config: PlaylistConfig,
-            items: List[Item],
-            seed_item: Item,
-            candidate_chooser: TrackSelector,
-            log: logging.Logger = logging.getLogger("beetmatch:generator"),
+        self,
+        jukebox: Jukebox,
+        config: PlaylistConfig,
+        items: List[Item],
+        seed_item: Item,
+        candidate_chooser: TrackSelector,
+        log: logging.Logger = logging.getLogger("beetmatch:generator"),
     ):
         self.log = log
         self.items = list(items)

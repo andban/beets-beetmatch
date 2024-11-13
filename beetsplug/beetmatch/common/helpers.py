@@ -17,11 +17,11 @@ def pick_random_item(items: list):
 
 
 def select_item_from_list(
-        items: list,
-        pick_random=False,
-        title="Select one of the following items:",
-        prompt="Enter item number:",
-        item_format="{index:>3}. {item}",
+    items: list,
+    pick_random=False,
+    title="Select one of the following items:",
+    prompt="Enter item number:",
+    item_format="{index:>3}. {item}",
 ) -> Union[Tuple[int, any], Tuple[int, None]]:
     """Select one item from a given list of `items`. If `items` contains only one item, this item
     is returned. When `items` contains more than one entry and `pick_random` is `False`, the user
@@ -53,10 +53,10 @@ def select_item_from_list(
 
 
 def import_optional(
-        module: str,
-        symbol: str = None,
-        package: str = None,
-        error: Union[str, None] = "raise",
+    module: str,
+    symbol: str = None,
+    package: str = None,
+    error: Union[str, None] = "raise",
 ) -> Optional[ModuleType]:
     import importlib
     import warnings

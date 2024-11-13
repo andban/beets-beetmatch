@@ -29,4 +29,6 @@ class PlaylistScript:
             cmd.extend([item.path for item in items])
             subprocess.run(cmd, stderr=stderr, stdout=stdout, check=True)
         except subprocess.CalledProcessError as e:
-            self._log.error("playlist script '%s' failed: %s", self._script_path, exc_info=e)
+            self._log.error(
+                "playlist script '%s' failed: %s", self._script_path, exc_info=e
+            )

@@ -95,9 +95,13 @@ class PlaylistCommand(Subcommand):
         track_selector = self.playlist_config.playlist_selector
 
         playlist_script_path = options.script or self.playlist_config.playlist_script
-        playlist_script = PlaylistScript(playlist_script_path, log=__logger__) if playlist_script_path else None
+        playlist_script = (
+            PlaylistScript(playlist_script_path, log=__logger__)
+            if playlist_script_path
+            else None
+        )
 
-        seed_query = ' '.join(arguments) if arguments else None
+        seed_query = " ".join(arguments) if arguments else None
         if seed_query:
             seed_item = select_item_interactive(lib, jukebox.get_query(seed_query))
         else:
@@ -122,16 +126,24 @@ class PlaylistCommand(Subcommand):
         duration = 0
 
         ui.print_(track_fmt.format("\nGenerated playlist:"))
-        ui.print_(track_fmt.format("{idx:>3}. {item.title} - {item.artist}", idx=1, item=seed_item))
+        ui.print_(
+            track_fmt.format(
+                "{idx:>3}. {item.title} - {item.artist}", idx=1, item=seed_item
+            )
+        )
 
         for item, similarity in generator:
             playlist.append(item)
             duration += item.length / 60
 
             ui.print_(
-                track_fmt.format("{idx:>3}. {item.title} - {item.artist} (similarity: {similarity:.3f})",
-                                 idx=len(playlist),
-                                 item=item, similarity=similarity))
+                track_fmt.format(
+                    "{idx:>3}. {item.title} - {item.artist} (similarity: {similarity:.3f})",
+                    idx=len(playlist),
+                    item=item,
+                    similarity=similarity,
+                )
+            )
 
             if options.duration and duration >= options.duration:
                 break
@@ -143,9 +155,9 @@ class PlaylistCommand(Subcommand):
 
 
 def _find_seed_item(
-        lib: Library,
-        jukebox_config: Jukebox,
-        query: str = None,
+    lib: Library,
+    jukebox_config: Jukebox,
+    query: str = None,
 ):
     seed_item_candidates = list(
         lib.items(jukebox_config.get_query(additional_query=query))

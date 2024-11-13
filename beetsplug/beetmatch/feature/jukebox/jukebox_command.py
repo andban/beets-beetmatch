@@ -94,7 +94,7 @@ class JukeboxCommand(Subcommand):
             jukebox.save_musly_jukebox()
 
     def _analyze_jukebox(
-            self, name, lib, threads=1, update=False, force=False, write=False
+        self, name, lib, threads=1, update=False, force=False, write=False
     ):
         jukebox = self._config.get_jukebox(name)
 
@@ -108,7 +108,9 @@ class JukeboxCommand(Subcommand):
         if len(items) > 0:
             with futures.ThreadPoolExecutor(max_workers=threads) as worker:
                 tasks = [
-                    worker.submit(_do_analysis, item, analysis_jukebox, write, self._log)
+                    worker.submit(
+                        _do_analysis, item, analysis_jukebox, write, self._log
+                    )
                     for item in items
                 ]
                 futures.wait(tasks)
@@ -139,9 +141,7 @@ def _do_analysis(item, jukebox, write, log=default_logger):
 
     path = item.get("path").decode("utf-8")
     if not path:
-        log.warning(
-            "Skipping item because its path does not exist (%s)", path
-        )
+        log.warning("Skipping item because its path does not exist (%s)", path)
         return
 
     try:
@@ -165,7 +165,7 @@ def _do_analysis(item, jukebox, write, log=default_logger):
 
 
 def _find_items_to_analyze(
-        lib: Library, required_method: str, query: Query, force=False
+    lib: Library, required_method: str, query: Query, force=False
 ):
     combined_query = query
     # exclude already analyzed items

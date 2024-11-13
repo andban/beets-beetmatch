@@ -32,7 +32,9 @@ class TrackSelector:
         self._log = log
 
     def choose_from(self, candidates: List[TrackCandidate]):
-        self._log.debug("selecting next track from a list of %d candidates...", len(candidates))
+        self._log.debug(
+            "selecting next track from a list of %d candidates...", len(candidates)
+        )
 
         if not candidates:
             self._log.debug("no candidates to select, returning None")
@@ -49,7 +51,9 @@ class TrackSelector:
         ]
         normed_candidates.sort(key=itemgetter(1))
 
-        self._log.debug("candidate similarity range: [%.3f, %.3f]", min_similarity, max_similarity)
+        self._log.debug(
+            "candidate similarity range: [%.3f, %.3f]", min_similarity, max_similarity
+        )
 
         # pick only candidates with normalized similarity >= _pickiness,
         # but if that means less candidates than _min_pool_size, get a bit less picky
@@ -59,14 +63,18 @@ class TrackSelector:
             if len(normed_candidates) - first_relevant_index >= self._min_pool_size:
                 break
 
-            first_relevant_index = bisect_left(normed_candidates, adjusted_pickiness, key=itemgetter(1))
+            first_relevant_index = bisect_left(
+                normed_candidates, adjusted_pickiness, key=itemgetter(1)
+            )
             if len(normed_candidates) - first_relevant_index < self._min_pool_size:
                 adjusted_pickiness -= 0.01
 
         if first_relevant_index < 1:
             first_relevant_index = 1
 
-        candidate_pool, candidate_probability = zip(*normed_candidates[first_relevant_index:])
+        candidate_pool, candidate_probability = zip(
+            *normed_candidates[first_relevant_index:]
+        )
         min_pool_probability = normed_candidates[first_relevant_index - 1][1]
         sample_biases = [
             int(99 * normalize(p, low=min_pool_probability, high=1.0)) + 1
@@ -76,7 +84,12 @@ class TrackSelector:
         self._log.debug(
             "selected a pool of %d candidates (minimum is %d) with a pickiness of %.2f (requested was %.2f) "
             "with similarity in range [%.3f, %.3f]",
-            len(candidate_pool), self._min_pool_size, adjusted_pickiness, self._pickiness, candidate_pool[0].similarity,
-            candidate_pool[-1].similarity)
+            len(candidate_pool),
+            self._min_pool_size,
+            adjusted_pickiness,
+            self._pickiness,
+            candidate_pool[0].similarity,
+            candidate_pool[-1].similarity,
+        )
 
         return sample(candidate_pool, counts=sample_biases, k=1)[0]
