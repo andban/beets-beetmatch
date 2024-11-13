@@ -15,13 +15,13 @@ on:
 
 jobs:
   build_sdist:
-    name: Build python packages
+    name: Build python source distribution
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Build SDist
-        run: pipx run build --sdist --wheel
+        run: pipx run build --sdist
 
       - name: Check metadata
         run: pipx run twine check dist/*
@@ -31,9 +31,26 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
+  build_wheel:
+    name: Build python wheel package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Wheel
+        run: pipx run build --wheel
+
+      - name: Check metadata
+        run: pipx run twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheel
+          path: dist/*.whl
+
   upload:
     name: Publish to PyPi
-    needs: [ build_sdist ]
+    needs: [ build_sdist, build_wheel ]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:
